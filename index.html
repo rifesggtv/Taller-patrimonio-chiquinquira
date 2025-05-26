@@ -536,7 +536,6 @@
                             <td class="py-3 px-6 text-left whitespace-nowrap">Materiales artísticos</td>
                             <td class="py-3 px-6 text-left">Tijeras, colbón, cinta masking</td>
                             <td class="py-3 px-6 text-left">Varios</td>
-                            <td class="py-3 px-6 text-left">1.00</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                         </tr>
@@ -591,7 +590,6 @@
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left whitespace-nowrap">Decoración/montaje</td>
                             <td class="py-3 px-6 text-left">Cintas, cuerdas, carteles guía, señalética interior</td>
-                            <td class="py-3 px-6 text-left">Lote</td>
                             <td class="py-3 px-6 text-right">$ 40,000.00</td>
                             <td class="py-3 px-6 text-right">$ 40,000.00</td>
                         </tr>
@@ -730,54 +728,74 @@
         // --- Lógica del Juego Didáctico ---
         const questions = [
             {
-                question: "¿Cuál es el nombre del taller propuesto en el proyecto?",
+                question: "¿Cuál es uno de los principales problemas que enfrenta el patrimonio arquitectónico en Chiquinquirá según el proyecto?",
                 options: [
-                    "Chiquinquirá Cultural Fest",
-                    "Taller Creativo de Sensibilización sobre el Patrimonio Cultural y Arquitectónico de Chiquinquirá",
-                    "Jornada de Preservación Histórica",
-                    "Seminario de Cultura Boyacense"
+                    "Exceso de turistas",
+                    "Falta de lluvias",
+                    "Indiferencia hacia inmuebles con valor histórico y ausencia de acciones efectivas",
+                    "Demasiados eventos culturales"
                 ],
-                correctAnswer: "Taller Creativo de Sensibilización sobre el Patrimonio Cultural y Arquitectónico de Chiquinquirá"
+                correctAnswer: "Indiferencia hacia inmuebles con valor histórico y ausencia de acciones efectivas"
             },
             {
-                question: "¿Qué frase resume la visión del proyecto?",
+                question: "¿Qué tipo de estrategia propone el proyecto para la sensibilización sobre el patrimonio?",
                 options: [
-                    "Chiquinquirá, memoria viva",
-                    "Construyendo el futuro",
-                    "Explorar, reconocer y cuidar lo que somos",
-                    "Historia y arquitectura sin límites"
+                    "Un festival de música",
+                    "Un taller creativo",
+                    "Una campaña publicitaria en televisión",
+                    "Un concurso de fotografía"
                 ],
-                correctAnswer: "Explorar, reconocer y cuidar lo que somos"
+                correctAnswer: "Un taller creativo"
             },
             {
-                question: "¿Qué lugar patrimonial se menciona que fue convertido en restaurante mexicano?",
+                question: "¿Qué lugar se menciona como ejemplo de espacio patrimonial convertido en restaurante mexicano?",
                 options: [
-                    "Castillo del Olimpo",
-                    "Antigua estación del ferrocarril",
-                    "Casa de la Cultura José Joaquín Casas",
-                    "Hotel Sarabita"
+                    "El Castillo del Olimpo",
+                    "La Basílica de Nuestra Señora del Rosario",
+                    "La antigua Casa de la Cultura José Joaquín Casas",
+                    "La estación del ferrocarril"
                 ],
-                correctAnswer: "Casa de la Cultura José Joaquín Casas"
+                correctAnswer: "La antigua Casa de la Cultura José Joaquín Casas"
             },
             {
-                question: "¿Qué edificio es descrito como una 'joya arquitectónica del siglo XVIII' y permanece en abandono?",
+                question: "¿Cuál es el objetivo general del taller?",
                 options: [
-                    "Palacio de la Cultura",
-                    "Basílica de Nuestra Señora del Rosario",
-                    "Castillo del Olimpo",
-                    "Antigua Casa de la Cultura"
+                    "Recaudar fondos para restauraciones",
+                    "Fomentar la apropiación del patrimonio cultural y arquitectónico de Chiquinquirá",
+                    "Crear un inventario de bienes históricos",
+                    "Atraer más turistas a la ciudad"
                 ],
-                correctAnswer: "Castillo del Olimpo"
+                correctAnswer: "Fomentar la apropiación del patrimonio cultural y arquitectónico de Chiquinquirá"
             },
             {
-                question: "¿Cuál es la Basílica más importante de Chiquinquirá mencionada en el texto?",
+                question: "¿Qué principio pedagógico de Fontal (2020) sustenta el enfoque metodológico del proyecto?",
                 options: [
-                    "Basílica de San Pedro",
-                    "Basílica de Nuestra Señora del Rosario",
-                    "Basílica de la Inmaculada Concepción",
-                    "Basílica de la Virgen del Carmen"
+                    "Aprender para memorizar",
+                    "Conocer para comprender, comprender para respetar, respetar para valorar, valorar para cuidar",
+                    "Observar para criticar",
+                    "Investigar para publicar"
                 ],
-                correctAnswer: "Basílica de Nuestra Señora del Rosario"
+                correctAnswer: "Conocer para comprender, comprender para respetar, respetar para valorar, valorar para cuidar"
+            },
+            {
+                question: "¿Qué espacio emblemático se propone como sede del taller por su historia y ubicación central?",
+                options: [
+                    "La Plaza de Bolívar",
+                    "El Hotel Sarabita",
+                    "El Palacio de la Cultura",
+                    "El Parque Julio Flórez"
+                ],
+                correctAnswer: "El Palacio de la Cultura"
+            },
+            {
+                question: "¿Cuál es uno de los productos tangibles esperados del taller?",
+                options: [
+                    "Un nuevo edificio patrimonial",
+                    "Una exposición comunitaria de piezas gráficas",
+                    "Un documental de televisión",
+                    "Un libro de historia local"
+                ],
+                correctAnswer: "Una exposición comunitaria de piezas gráficas"
             }
         ];
 
