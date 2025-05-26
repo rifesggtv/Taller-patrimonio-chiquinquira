@@ -45,6 +45,7 @@
             border-radius: 0.5rem;
             text-decoration: none;
             transition: background-color 0.3s ease;
+            cursor: pointer; /* Añadir cursor de puntero para indicar que es clickeable */
         }
         .button:hover {
             background-color: #3182ce; /* Un azul más oscuro al pasar el ratón */
@@ -103,6 +104,48 @@
             object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
             border-radius: 0.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 80%; /* Could be more responsive */
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -499,7 +542,6 @@
                             <td class="py-3 px-6 text-left whitespace-nowrap">Misceláneos</td>
                             <td class="py-3 px-6 text-left">Transporte local de materiales/gastos imprevistos</td>
                             <td class="py-3 px-6 text-left">Estimado</td>
-                            <td class="py-3 px-6 text-left">1.00</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                         </tr>
@@ -561,8 +603,8 @@
                     <img src="https://placehold.co/400x200/4299e1/ffffff?text=Palacio+de+la+Cultura" alt="Imagen del Palacio de la Cultura">
                 </div>
                 <div class="text-center mt-8">
-                    <button class="button" onclick="alert('¡Esta es una demostración! En una versión real, aquí podrías subir tus propias fotos.')">
-                        Subir tus propias imágenes (Demostración)
+                    <button class="button" onclick="openModal()">
+                        Subir tus propias imágenes
                     </button>
                 </div>
             </div>
@@ -586,6 +628,29 @@
         </footer>
     </div>
 
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h3 class="text-2xl font-bold mb-4 text-blue-700">Subir Imágenes</h3>
+            <p class="mb-4">
+                Para una funcionalidad completa de subida de imágenes que persista los datos, esta página necesitaría un <strong>servidor de backend</strong> y una <strong>base de datos</strong>.
+            </p>
+            <p class="mb-4">
+                En este entorno de previsualización, solo puedes seleccionar archivos localmente.
+            </p>
+            <input type="file" id="imageUploadInput" accept="image/*" class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100 mb-4">
+            <p class="text-sm text-gray-600">
+                (Al seleccionar un archivo, no se subirá a un servidor, solo se simula la acción.)
+            </p>
+            <button class="button mt-4" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
     <script>
         // Función para alternar la visibilidad del contenido del acordeón
         function toggleAccordion(header) {
@@ -595,6 +660,24 @@
                 content.style.display = 'none';
             } else {
                 content.style.display = 'block';
+            }
+        }
+
+        // Funciones para el modal de subida de imágenes
+        const uploadModal = document.getElementById('uploadModal');
+
+        function openModal() {
+            uploadModal.style.display = 'flex'; // Usar flex para centrar
+        }
+
+        function closeModal() {
+            uploadModal.style.display = 'none';
+        }
+
+        // Cerrar el modal si se hace clic fuera de él
+        window.onclick = function(event) {
+            if (event.target == uploadModal) {
+                closeModal();
             }
         }
     </script>
