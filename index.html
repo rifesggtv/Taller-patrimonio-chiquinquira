@@ -9,8 +9,9 @@
         /* Estilos personalizados para la fuente Inter y algunos ajustes generales */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Un color de fondo suave */
-            color: #333;
+            background-color: #e0f2fe; /* Un azul claro muy suave para el fondo */
+            color: #2d3748; /* Un gris oscuro para el texto principal */
+            line-height: 1.6;
         }
         .container {
             max-width: 1200px;
@@ -18,61 +19,87 @@
             padding: 2rem;
         }
         .section-title {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #2c5282; /* Un azul oscuro para los títulos */
-            margin-bottom: 1.5rem;
+            font-size: 2.8rem; /* Títulos más grandes */
+            font-weight: 800; /* Más audaz */
+            color: #1a365d; /* Azul muy oscuro para los títulos */
+            margin-bottom: 2.5rem;
             text-align: center;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background-color: #4299e1; /* Línea decorativa azul */
+            margin: 0.75rem auto 0;
+            border-radius: 2px;
         }
         .card {
             background-color: #ffffff;
-            border-radius: 0.75rem; /* Bordes más redondeados */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 1rem; /* Bordes aún más redondeados */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0; /* Borde sutil */
         }
         .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #3182ce; /* Un azul más claro para los subtítulos de las tarjetas */
-            margin-bottom: 1rem;
+            font-size: 1.8rem; /* Subtítulos más grandes */
+            font-weight: 700;
+            color: #2b6cb0; /* Azul medio para los subtítulos de las tarjetas */
+            margin-bottom: 1.25rem;
+            border-bottom: 2px solid #ebf8ff; /* Línea inferior sutil */
+            padding-bottom: 0.5rem;
         }
         .button {
             display: inline-block;
             background-color: #4299e1; /* Azul vibrante para los botones */
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            padding: 0.9rem 2rem; /* Más padding */
+            border-radius: 0.75rem; /* Más redondeado */
             text-decoration: none;
-            transition: background-color 0.3s ease;
-            cursor: pointer; /* Añadir cursor de puntero para indicar que es clickeable */
+            transition: all 0.3s ease; /* Transición más suave para todo */
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .button:hover {
             background-color: #3182ce; /* Un azul más oscuro al pasar el ratón */
+            transform: translateY(-3px); /* Efecto de elevación */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
         .accordion-header {
-            background-color: #ebf8ff; /* Fondo claro para los encabezados del acordeón */
-            padding: 1rem;
-            border-radius: 0.5rem;
+            background-color: #bfdbfe; /* Azul claro para los encabezados del acordeón */
+            padding: 1.25rem;
+            border-radius: 0.75rem;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
-            color: #2c5282;
-            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #1e40af; /* Azul oscuro para el texto del acordeón */
+            margin-bottom: 0.75rem;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        .accordion-header:hover {
+            background-color: #93c5fd; /* Azul más oscuro al pasar el ratón */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
         }
         .accordion-content {
-            background-color: #f7fafc; /* Fondo aún más claro para el contenido del acordeón */
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
+            background-color: #eff6ff; /* Fondo aún más claro para el contenido del acordeón */
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
             display: none; /* Oculto por defecto */
+            border: 1px dashed #a7d9f8; /* Borde punteado */
         }
         .accordion-header::after {
             content: '+';
-            font-size: 1.5rem;
+            font-size: 1.8rem; /* Icono más grande */
             transition: transform 0.3s ease;
+            color: #1e40af;
         }
         .accordion-header.active::after {
             content: '-';
@@ -80,97 +107,138 @@
         }
         .timeline-item {
             display: flex;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 7.5rem; /* Ajustar para alinear con el centro del círculo */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #a0aec0;
         }
         .timeline-time {
             flex-shrink: 0;
             width: 8rem; /* Ancho fijo para la hora */
             font-weight: bold;
             color: #4a5568;
+            position: relative;
+            padding-right: 1.5rem;
+            text-align: right;
+        }
+        .timeline-time::after {
+            content: '';
+            position: absolute;
+            right: -8px; /* Ajustar para que el círculo esté en la línea */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background-color: #4299e1; /* Círculo azul */
+            border-radius: 50%;
+            border: 3px solid #ffffff; /* Borde blanco para el círculo */
+            box-shadow: 0 0 0 2px #4299e1;
         }
         .timeline-description {
             flex-grow: 1;
-            padding-left: 1rem;
-            border-left: 2px solid #a0aec0; /* Línea de tiempo */
+            padding-left: 2.5rem; /* Más espacio para el contenido */
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+            padding: 1.25rem;
+            margin-left: 1rem; /* Separación de la línea */
         }
         .image-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Imágenes un poco más grandes */
+            gap: 1.5rem; /* Más espacio entre imágenes */
         }
         .image-gallery img {
             width: 100%;
-            height: 200px; /* Altura fija para las imágenes */
-            object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 220px; /* Altura fija para las imágenes */
+            object-fit: cover;
+            border-radius: 0.75rem;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+            transition: transform 0.3s ease;
+        }
+        .image-gallery img:hover {
+            transform: scale(1.03); /* Efecto de zoom al pasar el ratón */
         }
 
         /* Estilos para el juego */
         .quiz-container {
             background-color: #f7fafc;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem; /* Más padding */
+            border-radius: 1rem;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
             text-align: center;
+            border: 1px solid #e2e8f0;
         }
         .quiz-question {
-            font-size: 1.5rem;
+            font-size: 1.6rem; /* Pregunta más grande */
             font-weight: bold;
-            margin-bottom: 1.5rem;
-            color: #2c5282;
+            margin-bottom: 2rem;
+            color: #1a365d;
         }
         .quiz-options {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: 1.25rem; /* Más espacio entre opciones */
+            margin-bottom: 2rem;
         }
         .quiz-option-button {
             background-color: #ebf8ff;
             color: #2c5282;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.5rem;
+            padding: 1rem 1.5rem; /* Más padding */
+            border-radius: 0.75rem;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            font-size: 1.15rem;
             text-align: left;
-            border: 1px solid #90cdf4;
+            border: 2px solid #90cdf4; /* Borde más visible */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        .quiz-option-button:hover {
+        .quiz-option-button:hover:not([disabled]) { /* No aplicar hover si está deshabilitado */
             background-color: #bee3f8;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .quiz-option-button.correct {
             background-color: #c6f6d5; /* Verde claro */
             border-color: #68d391; /* Verde más oscuro */
+            color: #276749; /* Texto verde oscuro */
+            box-shadow: 0 2px 4px rgba(41, 142, 60, 0.2);
         }
         .quiz-option-button.incorrect {
             background-color: #fed7d7; /* Rojo claro */
             border-color: #fc8181; /* Rojo más oscuro */
+            color: #9b2c2c; /* Texto rojo oscuro */
+            box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
         }
         .quiz-feedback {
-            font-size: 1.2rem;
+            font-size: 1.3rem; /* Feedback más grande */
             font-weight: bold;
-            margin-top: 1rem;
-            color: #2c5282;
+            margin-top: 1.5rem;
+            color: #1a365d;
         }
         .quiz-score {
-            font-size: 2rem;
+            font-size: 2.5rem; /* Puntuación final más grande */
             font-weight: bold;
             color: #3182ce;
-            margin-top: 2rem;
+            margin-top: 2.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="text-center py-8 bg-blue-700 text-white rounded-lg mb-8 shadow-lg">
-            <h1 class="text-4xl font-extrabold mb-2">Taller Creativo de Sensibilización sobre el Patrimonio Cultural y Arquitectónico de Chiquinquirá</h1>
-            <p class="text-xl italic">"Explorar, reconocer y cuidar lo que somos"</p>
-            <p class="text-lg mt-4">Andrés F. Guerrero S. y Paula D. Torres J.</p>
-            <p class="text-md">Universidad Pedagógica y Tecnológica de Colombia</p>
-            <p class="text-sm">26 de mayo de 2025</p>
+        <header class="text-center py-10 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-xl mb-10 shadow-2xl transform hover:scale-102 transition-transform duration-300 ease-in-out">
+            <h1 class="text-5xl font-extrabold mb-3 tracking-tight">Taller Creativo de Sensibilización sobre el Patrimonio Cultural y Arquitectónico de Chiquinquirá</h1>
+            <p class="text-2xl italic font-light opacity-90">"Explorar, reconocer y cuidar lo que somos"</p>
+            <p class="text-lg mt-6 font-medium">Andrés F. Guerrero S. y Paula D. Torres J.</p>
+            <p class="text-md opacity-80">Universidad Pedagógica y Tecnológica de Colombia</p>
+            <p class="text-sm mt-2 opacity-70">26 de mayo de 2025</p>
         </header>
 
         <section class="mb-12">
@@ -351,7 +419,7 @@
                     El taller dejará como producto tangible una exposición comunitaria que reunirá carteles, ilustraciones, textos breves y otras piezas gráficas elaboradas por los asistentes. Esta muestra se instalará en el Palacio de la Cultura como acto simbólico de reapropiación del espacio y como ejercicio de visibilización de la memoria urbana compartida.
                 </p>
                 <p class="text-lg leading-relaxed">
-                    Además, se generará un registro visual del proceso (fotografías, frases destacadas, fragmentos narrativos), que funcionará como memoria del evento y podrá compartirse digitalmente con instituciones culturales, medios locales y otras comunidades interesadas en replicar la experiencia. Más allá de los productos materiales, el logro más significativo será la activación de un vínculo emocional entre los participantes y su patrimonio, fortaleciendo el sentido de pertenencia, la conciencia crítica y la voluntad de cuidado colectivo. También se espera que esta experiencia contribuya a consolidar el rol del Palacio de la Cultura como escenario vivo de formación, creación y encuentro ciudadano.
+                    Además, se generará un registro visual del proceso (fotografías, frases destacadas, testimonios), que funcionará como memoria del evento y podrá compartirse digitalmente con instituciones culturales, medios locales y otras comunidades interesadas en replicar la experiencia. Más allá de los productos materiales, el logro más significativo será la activación de un vínculo emocional entre los participantes y su patrimonio, fortaleciendo el sentido de pertenencia, la conciencia crítica y la voluntad de cuidado colectivo. También se espera que esta experiencia contribuya a consolidar el rol del Palacio de la Cultura como escenario vivo de formación, creación y encuentro ciudadano.
                 </p>
             </div>
         </section>
@@ -375,7 +443,7 @@
                 <p class="text-lg leading-relaxed mb-6">Al cierre del taller, se llevará a cabo una exposición abierta en el Palacio de la Cultura con los productos elaborados por los participantes. Este evento será un punto de encuentro entre asistentes, familias, comunidad local y actores institucionales. También representará una oportunidad para reconocer el trabajo colectivo, visibilizar resultados y reforzar el mensaje central del proyecto.</p>
 
                 <h3 class="card-title">Registro y visibilización digital</h3>
-                <p class="text-lg leading-relaxed">Se construirá una memoria visual del proceso (fotografías, frases destacadas, testimonios) organizada en un documento digital tipo catálogo, que será compartido por correo electrónico, redes sociales y canales institucionales para su consulta abierta.</p>
+                <p class="text-lg leading-relaxed">Se construirá una memoria visual del proceso (fotografías, frases destacadas, testimonios), que funcionará como memoria del evento y podrá compartirse digitalmente con instituciones culturales, medios locales y otras comunidades interesadas en replicar la experiencia.</p>
             </div>
         </section>
 
@@ -524,37 +592,30 @@
                             <td class="py-3 px-6 text-left whitespace-nowrap">Decoración/montaje</td>
                             <td class="py-3 px-6 text-left">Cintas, cuerdas, carteles guía, señalética interior</td>
                             <td class="py-3 px-6 text-left">Lote</td>
-                            <td class="py-3 px-6 text-left">1.00</td>
                             <td class="py-3 px-6 text-right">$ 40,000.00</td>
                             <td class="py-3 px-6 text-right">$ 40,000.00</td>
                         </tr>
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left whitespace-nowrap">Decoración/montaje</td>
                             <td class="py-3 px-6 text-left">Ganchos, cuerda, pinzas (para colgar obras)</td>
-                            <td class="py-3 px-6 text-left">Lote</td>
                             <td class="py-3 px-6 text-right">$ 20,000.00</td>
                             <td class="py-3 px-6 text-right">$ 20,000.00</td>
                         </tr>
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left whitespace-nowrap">Registro del evento</td>
                             <td class="py-3 px-6 text-left">Servicio de fotografía (persona de apoyo, 4 horas)</td>
-                            <td class="py-3 px-6 text-left">Honorarios</td>
-                            <td class="py-3 px-6 text-left">1.00</td>
                             <td class="py-3 px-6 text-right">$ 100,000.00</td>
                             <td class="py-3 px-6 text-right">$ 100,000.00</td>
                         </tr>
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left whitespace-nowrap">Registro del evento</td>
                             <td class="py-3 px-6 text-left">Impresión de afiches para la exposición final</td>
-                            <td class="py-3 px-6 text-left">Unidad</td>
-                            <td class="py-3 px-6 text-left">10.00</td>
                             <td class="py-3 px-6 text-right">$ 5,000.00</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                         </tr>
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left whitespace-nowrap">Misceláneos</td>
                             <td class="py-3 px-6 text-left">Transporte local de materiales/gastos imprevistos</td>
-                            <td class="py-3 px-6 text-left">Estimado</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                             <td class="py-3 px-6 text-right">$ 50,000.00</td>
                         </tr>
@@ -649,7 +710,7 @@
             </div>
         </section>
 
-        <footer class="text-center py-6 bg-blue-700 text-white rounded-lg mt-8 shadow-lg">
+        <footer class="text-center py-8 bg-blue-900 text-white rounded-xl mt-10 shadow-inner">
             <p>&copy; 2025 Taller de Sensibilización Cultural y Arquitectónica de Chiquinquirá. Todos los derechos reservados.</p>
         </footer>
     </div>
@@ -740,14 +801,14 @@
             quizGameContainer.classList.remove('hidden');
             quizResultsContainer.classList.add('hidden');
             quizNextButton.classList.remove('hidden');
-            quizRestartButton.classList.add('hidden'); // Hide restart button initially
+            quizRestartButton.classList.add('hidden'); // Ocultar el botón de reiniciar al inicio
             showQuestion();
         }
 
         function showQuestion() {
             answered = false;
             quizFeedback.textContent = '';
-            quizOptions.innerHTML = ''; // Clear previous options
+            quizOptions.innerHTML = ''; // Limpiar opciones anteriores
 
             const questionData = questions[currentQuestionIndex];
             quizQuestion.textContent = questionData.question;
@@ -760,21 +821,21 @@
                 quizOptions.appendChild(button);
             });
 
-            // Hide next button if it's the last question
+            // Ocultar el botón "Siguiente" si es la última pregunta
             if (currentQuestionIndex === questions.length - 1) {
                 quizNextButton.textContent = "Ver resultados";
             } else {
                 quizNextButton.textContent = "Siguiente pregunta";
             }
-            quizNextButton.disabled = true; // Disable until an answer is selected
+            quizNextButton.disabled = true; // Deshabilitar hasta que se seleccione una respuesta
         }
 
         function selectAnswer(selectedOption, correctAnswer, button) {
-            if (answered) return; // Prevent re-answering
+            if (answered) return; // Evitar responder de nuevo
             answered = true;
-            quizNextButton.disabled = false; // Enable next button
+            quizNextButton.disabled = false; // Habilitar el botón siguiente
 
-            // Mark all buttons as disabled after selection
+            // Deshabilitar todos los botones después de la selección
             Array.from(quizOptions.children).forEach(btn => btn.disabled = true);
 
             if (selectedOption === correctAnswer) {
@@ -784,7 +845,7 @@
             } else {
                 quizFeedback.textContent = "Incorrecto. La respuesta correcta es: " + correctAnswer;
                 button.classList.add('incorrect');
-                // Highlight the correct answer if it's not the selected one
+                // Resaltar la respuesta correcta si no es la seleccionada
                 Array.from(quizOptions.children).forEach(btn => {
                     if (btn.textContent === correctAnswer) {
                         btn.classList.add('correct');
