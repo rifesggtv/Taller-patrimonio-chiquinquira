@@ -30,7 +30,7 @@
         </div>
         <div class="flex gap-2">
             <button id="btnAddProduct" class="bg-green-500 hover:bg-green-400 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
-                + Añadir Producto
+                + Añadir Botón
             </button>
             <button id="toggleEdit" class="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition">
                 Configurar Botones
@@ -43,6 +43,22 @@
         <!-- Sección Izquierda: Productos y Venta Actual -->
         <div class="flex-1 p-6 flex flex-col gap-6 overflow-y-auto custom-scroll">
             
+            <!-- Entrada de Precio Libre -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Precio Manual (Producto sin botón)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="inputManualPrice" placeholder="0" class="flex-1 p-3 border border-slate-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <button id="btnManualAdd" class="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-lg font-bold flex items-center gap-2 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            Añadir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Grid de Productos -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="productsGrid">
                 <!-- Los botones se generan con JS -->
@@ -51,7 +67,7 @@
             <!-- Panel de Cálculo de Pago -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-auto">
                 <h2 class="text-lg font-bold mb-4 text-slate-700">Finalizar Venta</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
                     <div>
                         <p class="text-sm text-slate-500 mb-1">Total a Pagar</p>
                         <p class="text-3xl font-bold text-blue-600" id="displayTotal">$0.00</p>
@@ -70,6 +86,9 @@
                         </button>
                         <button id="btnFinalizarCargo" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
                             💳 Cargo/Tarjeta
+                        </button>
+                        <button id="btnFinalizarVarios" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+                            📁 Venta "Varios"
                         </button>
                     </div>
                 </div>
@@ -167,6 +186,8 @@
         const productCounter = document.getElementById('productCounter');
         const btnExportPDF = document.getElementById('btnExportPDF');
         const btnClearHistory = document.getElementById('btnClearHistory');
+        const inputManualPrice = document.getElementById('inputManualPrice');
+        const btnManualAdd = document.getElementById('btnManualAdd');
 
         const formatMoney = (amount) => {
             return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
@@ -193,6 +214,16 @@
             btnAddProduct.disabled = products.length >= MAX_PRODUCTS;
             btnAddProduct.style.opacity = products.length >= MAX_PRODUCTS ? "0.5" : "1";
         }
+
+        // Añadir Manualmente
+        btnManualAdd.onclick = () => {
+            const price = parseFloat(inputManualPrice.value);
+            if (!price || price <= 0) return alertMessage("Ingresa un precio válido", "bg-yellow-500");
+            
+            addToCart({ name: "Manual", price: price });
+            inputManualPrice.value = '';
+            inputManualPrice.focus();
+        };
 
         // Carrito
         function addToCart(product) {
@@ -246,7 +277,6 @@
 
             if (total === 0) return alertMessage("Carrito vacío", "bg-yellow-500");
             
-            // Si es efectivo, validar el pago
             if (method === 'Efectivo' && pago < total) {
                 return alertMessage("Falta dinero para pagar", "bg-red-500");
             }
@@ -261,7 +291,7 @@
             };
 
             history.unshift(venta);
-            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 100))); // Aumentado a 100 para PDF
+            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 100)));
             
             cart = [];
             inputPago.value = '';
@@ -271,6 +301,7 @@
 
         document.getElementById('btnFinalizarCash').onclick = () => finalizeSale('Efectivo');
         document.getElementById('btnFinalizarCargo').onclick = () => finalizeSale('Cargo');
+        document.getElementById('btnFinalizarVarios').onclick = () => finalizeSale('Varios');
         document.getElementById('btnLimpiar').onclick = () => { cart = []; updateUI(); };
 
         function renderHistory() {
@@ -281,14 +312,17 @@
             salesHistory.innerHTML = history.map(v => `
                 <div class="bg-white p-3 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="p-2 rounded-full ${v.metodo === 'Efectivo' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'}">
+                        <div class="p-2 rounded-full ${v.metodo === 'Efectivo' ? 'bg-green-100 text-green-600' : (v.metodo === 'Varios' ? 'bg-slate-200 text-slate-700' : 'bg-purple-100 text-purple-600')}">
                             ${v.metodo === 'Efectivo' ? 
                                 '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : 
-                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>'}
+                                (v.metodo === 'Varios' ? 
+                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9l-2 2H5a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>' :
+                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>')
+                            }
                         </div>
                         <div>
                             <p class="font-bold text-slate-800">${formatMoney(v.total)}</p>
-                            <p class="text-[10px] text-slate-400 uppercase">${v.fecha} • ${v.items} prod.</p>
+                            <p class="text-[10px] text-slate-400 uppercase">${v.fecha} • ${v.items} prod. • ${v.metodo}</p>
                         </div>
                     </div>
                 </div>
