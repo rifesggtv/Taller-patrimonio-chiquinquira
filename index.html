@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Caja Registradora - v3.1</title>
+    <title>Sistema de Caja Registradora - v3.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -136,7 +136,7 @@
         let products = JSON.parse(localStorage.getItem('pos_products')) || [{ id: 1, name: "Producto Base", price: 1000 }];
         let history = JSON.parse(localStorage.getItem('pos_history')) || [];
         let cart = [];
-        let payments = []; // Almacena abonos parciales antes de cerrar la venta
+        let payments = []; 
         let isEditMode = false;
         let editingId = null;
 
@@ -193,7 +193,6 @@
             displayTotal.innerText = formatMoney(pendiente);
             
             const montoAbono = parseFloat(inputPago.value) || 0;
-            // Solo mostrar vueltas si el abono supera el pendiente
             displayCambio.innerText = formatMoney(Math.max(0, montoAbono - pendiente));
 
             if (payments.length > 0) paymentStatus.classList.remove('hidden');
@@ -208,12 +207,10 @@
 
             let montoInput = parseFloat(inputPago.value) || 0;
 
-            // Caso 1: No puso nada en el input (asumimos que paga el resto completo con ese botón)
             if (montoInput === 0) {
                 montoInput = pendiente;
             }
 
-            // Caso 2: Puso más de lo pendiente (registramos solo el pendiente, el resto es vuelta)
             const montoRealAAbonar = Math.min(montoInput, pendiente);
 
             payments.push({
@@ -221,12 +218,10 @@
                 method: method
             });
 
-            // Si ya cubrimos el total, cerramos la venta
             const nuevoTotalPagado = payments.reduce((s, p) => s + p.amount, 0);
             if (nuevoTotalPagado >= cartTotal) {
                 finalizeSale();
             } else {
-                // Si falta dinero, limpiamos input y actualizamos UI para seguir abonando
                 inputPago.value = '';
                 updateUI();
             }
@@ -238,33 +233,28 @@
             const timestamp = fechaObj.toLocaleString();
             const timeStr = fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            // Agrupamos los productos y los métodos de pago en el historial
-            // Creamos un registro por cada método de pago utilizado en esta venta
-            const resMetodos = {};
-            payments.forEach(p => {
-                resMetodos[p.method] = (resMetodos[p.method] || 0) + p.amount;
-            });
-
-            const newEntries = [];
-            
-            // Si hubo varios productos, los unimos en una sola descripción para el historial
+            const cartTotal = cart.reduce((s, i) => s + i.price, 0);
             const nombresProductos = cart.map(i => i.name).join(", ");
             
-            Object.keys(resMetodos).forEach(m => {
-                newEntries.push({
-                    id: Date.now() + Math.random(),
-                    name: nombresProductos,
-                    price: resMetodos[m],
-                    metodo: m,
-                    fechaFull: timestamp,
-                    fechaCorta: timeStr
-                });
+            // Consolidamos los pagos en un solo objeto para el historial
+            const resumenPagos = {};
+            payments.forEach(p => {
+                resumenPagos[p.method] = (resumenPagos[p.method] || 0) + p.amount;
             });
 
-            history = [...newEntries, ...history];
+            // Creamos una sola entrada de historial con el desglose de pagos
+            const newEntry = {
+                id: Date.now(),
+                name: nombresProductos,
+                total: cartTotal,
+                pagos: resumenPagos, // Ej: { Efectivo: 500, Tarjeta: 500 }
+                fechaFull: timestamp,
+                fechaCorta: timeStr
+            };
+
+            history = [newEntry, ...history];
             localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 1000)));
             
-            // Reset completo
             cart = [];
             payments = [];
             inputPago.value = '';
@@ -282,20 +272,46 @@
                 historyTotalSum.innerText = formatMoney(0);
                 return;
             }
-            const totalSum = history.reduce((s, h) => s + h.price, 0);
+            
+            const totalSum = history.reduce((s, h) => s + h.total, 0);
             historyTotalSum.innerText = formatMoney(totalSum);
-            salesHistory.innerHTML = history.map(v => `
-                <div class="bg-white p-2 rounded border-l-4 ${v.metodo === 'Tarjeta' ? 'border-purple-500' : 'border-green-500'} shadow-sm flex justify-between items-center">
-                    <div class="flex-1 pr-1 truncate">
-                        <p class="font-bold text-slate-800 truncate text-[10px]">${v.name}</p>
-                        <p class="text-[8px] text-slate-400 uppercase">${v.fechaCorta} - ${v.metodo}</p>
+
+            salesHistory.innerHTML = history.map(v => {
+                const metodos = Object.keys(v.pagos);
+                const esMixto = metodos.length > 1;
+                
+                // Color dinámico según método predominante o mixto
+                let borderColor = "border-slate-300";
+                if (!esMixto) {
+                    borderColor = metodos[0] === 'Tarjeta' ? 'border-purple-500' : 'border-green-500';
+                } else {
+                    borderColor = 'border-orange-500'; // Color para pagos mixtos
+                }
+
+                const desgloseHTML = metodos.map(m => 
+                    `<span class="px-1.5 py-0.5 rounded-md ${m === 'Tarjeta' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'} font-bold">
+                        ${m}: ${formatMoney(v.pagos[m])}
+                    </span>`
+                ).join(' ');
+
+                return `
+                <div class="bg-white p-2 rounded border-l-4 ${borderColor} shadow-sm flex flex-col gap-1">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1 pr-1 truncate">
+                            <p class="font-bold text-slate-800 truncate text-[10px]">${v.name}</p>
+                            <p class="text-[8px] text-slate-400 uppercase">${v.fechaCorta} ${esMixto ? '- PAGO MIXTO' : '- ' + metodos[0]}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <p class="font-black text-slate-900 text-xs">${formatMoney(v.total)}</p>
+                            <button onclick="removeHistoryItem(${v.id})" class="text-slate-200 hover:text-red-500">✕</button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <p class="font-bold ${v.metodo === 'Tarjeta' ? 'text-purple-600' : 'text-green-600'}">${formatMoney(v.price)}</p>
-                        <button onclick="removeHistoryItem(${v.id})" class="text-slate-200 hover:text-red-500">✕</button>
+                    <div class="flex flex-wrap gap-1 mt-1 text-[8px]">
+                        ${desgloseHTML}
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function removeHistoryItem(id) {
@@ -375,10 +391,15 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.text("Reporte de Ventas", 14, 15);
-            const totalVentas = history.reduce((s, h) => s + h.price, 0);
-            const rows = history.map(v => [v.fechaFull, v.name, v.metodo, formatMoney(v.price)]);
+            const totalVentas = history.reduce((s, h) => s + h.total, 0);
+            
+            const rows = history.map(v => {
+                const metodosStr = Object.keys(v.pagos).map(m => `${m}: ${formatMoney(v.pagos[m])}`).join(' | ');
+                return [v.fechaFull, v.name, metodosStr, formatMoney(v.total)];
+            });
+            
             rows.push(['', '', 'TOTAL:', formatMoney(totalVentas)]);
-            doc.autoTable({ head: [['Fecha', 'Detalle', 'Método', 'Precio']], body: rows, startY: 25 });
+            doc.autoTable({ head: [['Fecha', 'Detalle', 'Métodos de Pago', 'Total']], body: rows, startY: 25 });
             doc.save("reporte.pdf");
         };
 
