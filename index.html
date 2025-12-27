@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Caja Registradora - v2.2</title>
+    <title>Sistema de Caja Registradora - v2.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -99,9 +99,9 @@
                 <div id="cartItems" class="flex-1 overflow-y-auto custom-scroll space-y-2"></div>
             </div>
 
-            <div class="p-4 h-1/2 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="font-bold text-slate-700 text-sm uppercase">📜 Historial (Desglosado)</h2>
+            <div class="p-4 h-3/5 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial Detallado</h2>
                     <div class="flex gap-2">
                         <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700" title="Exportar PDF">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -111,6 +111,13 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Resumen de Ventas en Historial -->
+                <div class="bg-blue-100 p-2 rounded-lg mb-2 flex justify-between items-center border border-blue-200">
+                    <span class="text-[10px] font-bold text-blue-700 uppercase">Venta Total:</span>
+                    <span id="historyTotalSum" class="font-black text-blue-800 text-sm">$0</span>
+                </div>
+
                 <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-2 text-[10px]"></div>
             </div>
         </aside>
@@ -150,6 +157,7 @@
         const displayCambio = document.getElementById('displayCambio');
         const salesHistory = document.getElementById('salesHistory');
         const configModal = document.getElementById('configModal');
+        const historyTotalSum = document.getElementById('historyTotalSum');
 
         // --- UTILIDADES ---
         const formatMoney = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
@@ -205,7 +213,6 @@
             const manualDateVal = document.getElementById('manualDateTime').value;
             const fechaObj = manualDateVal ? new Date(manualDateVal) : new Date();
             
-            // CAMBIO CLAVE: Desglosar el carrito en registros individuales para el historial
             const newEntries = cart.map(item => ({
                 id: Date.now() + Math.random(),
                 name: item.name,
@@ -215,35 +222,46 @@
                 fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }));
 
-            // Insertar cada item por separado al inicio del historial
             history = [...newEntries, ...history];
-            
-            // Persistir (máximo 500 líneas para no saturar memoria)
             localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 500)));
             
-            // Limpiar interfaz
             cart = [];
             inputPago.value = '';
             document.getElementById('manualDateTime').value = '';
             
             updateUI();
             renderHistory();
-            alert("Venta procesada producto por producto en el historial");
+        }
+
+        function removeHistoryItem(id) {
+            if(confirm("¿Eliminar este registro del historial?")) {
+                history = history.filter(h => h.id !== id);
+                localStorage.setItem('pos_history', JSON.stringify(history));
+                renderHistory();
+            }
         }
 
         function renderHistory() {
             if (history.length === 0) {
                 salesHistory.innerHTML = '<p class="text-center text-slate-400 mt-2">Sin registros</p>';
+                historyTotalSum.innerText = formatMoney(0);
                 return;
             }
+
+            const totalSum = history.reduce((s, h) => s + h.price, 0);
+            historyTotalSum.innerText = formatMoney(totalSum);
+
             salesHistory.innerHTML = history.map(v => `
-                <div class="bg-white p-2 rounded border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
-                    <div class="flex-1 pr-2">
+                <div class="bg-white p-2 rounded border-l-4 border-blue-500 shadow-sm flex justify-between items-center group">
+                    <div class="flex-1 pr-1 truncate">
                         <p class="font-bold text-slate-800 truncate">${v.name}</p>
                         <p class="text-[9px] text-slate-400">${v.fechaCorta} - ${v.metodo}</p>
                     </div>
-                    <div class="text-right">
-                        <p class="font-bold text-green-600">${formatMoney(v.price)}</p>
+                    <div class="flex items-center gap-2">
+                        <p class="font-bold text-green-600 whitespace-nowrap">${formatMoney(v.price)}</p>
+                        <button onclick="removeHistoryItem(${v.id})" class="text-slate-300 hover:text-red-500 transition-colors p-1">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -303,27 +321,45 @@
         inputPago.oninput = updateUI;
 
         document.getElementById('btnClearHistory').onclick = () => {
-            if(confirm("¿Seguro que deseas borrar TODO el historial de productos?")) {
+            if(confirm("¿Seguro que deseas borrar TODO el historial?")) {
                 history = [];
                 localStorage.setItem('pos_history', JSON.stringify([]));
                 renderHistory();
             }
         };
 
-        // Exportar PDF desglosado
+        // Exportar PDF desglosado con TOTAL al final
         document.getElementById('btnExportPDF').onclick = () => {
             if (history.length === 0) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            
+            doc.setFontSize(18);
             doc.text("Reporte Detallado de Ventas", 14, 15);
+            doc.setFontSize(10);
+            doc.text("Generado el: " + new Date().toLocaleString(), 14, 22);
+
+            const totalVentas = history.reduce((s, h) => s + h.price, 0);
             const rows = history.map(v => [v.fechaFull, v.name, v.metodo, formatMoney(v.price)]);
+            
+            // Agregar fila de total al final de la tabla
+            rows.push(['', '', 'TOTAL VENTAS:', formatMoney(totalVentas)]);
+
             doc.autoTable({ 
                 head: [['Fecha/Hora', 'Producto', 'Método', 'Precio']], 
                 body: rows, 
-                startY: 20,
-                theme: 'striped'
+                startY: 28,
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] },
+                didParseCell: function (data) {
+                    if (data.row.index === rows.length - 1) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [219, 234, 254];
+                    }
+                }
             });
-            doc.save("cuadre_caja_detallado.pdf");
+
+            doc.save("cuadre_caja_totalizado.pdf");
         };
 
         // --- INIT ---
