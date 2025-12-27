@@ -86,12 +86,18 @@
                         <p class="text-3xl font-bold text-green-600" id="displayCambio">$0.00</p>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <button id="btnFinalizarCash" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
-                            💵 Efectivo
+                        <!-- BOTÓN NUEVO: Finalizar Directamente -->
+                        <button id="btnFinalizarDirect" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+                            ⚡ Venta Rápida (Exacto)
                         </button>
-                        <button id="btnFinalizarCargo" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
-                            💳 Cargo/Tarjeta
-                        </button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btnFinalizarCash" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-1 text-sm">
+                                💵 Efectivo
+                            </button>
+                            <button id="btnFinalizarCargo" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-1 text-sm">
+                                💳 Tarjeta
+                            </button>
+                        </div>
                         <button id="btnFinalizarVarios" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
                             📁 Venta "Varios"
                         </button>
@@ -232,7 +238,6 @@
 
             addToCart({ name: finalName, price: price });
             
-            // Limpiar campos y enfocar nombre para el siguiente
             inputManualPrice.value = '';
             inputManualName.value = '';
             inputManualName.focus();
@@ -284,13 +289,14 @@
         inputPago.addEventListener('input', calculateChange);
 
         // Finalizar Venta
-        function finalizeSale(method) {
+        function finalizeSale(method, ignorePago = false) {
             const total = cart.reduce((sum, item) => sum + item.price, 0);
             const pago = parseFloat(inputPago.value) || 0;
 
             if (total === 0) return alertMessage("Carrito vacío", "bg-yellow-500");
             
-            if (method === 'Efectivo' && pago < total) {
+            // Si no ignoramos el pago (efectivo normal), validamos el monto
+            if (!ignorePago && method === 'Efectivo' && pago < total) {
                 return alertMessage("Falta dinero para pagar", "bg-red-500");
             }
 
@@ -312,8 +318,10 @@
             alertMessage(`Venta registrada (${method})`, "bg-green-600");
         }
 
+        // Handlers de botones de finalización
+        document.getElementById('btnFinalizarDirect').onclick = () => finalizeSale('Efectivo', true);
         document.getElementById('btnFinalizarCash').onclick = () => finalizeSale('Efectivo');
-        document.getElementById('btnFinalizarCargo').onclick = () => finalizeSale('Cargo');
+        document.getElementById('btnFinalizarCargo').onclick = () => finalizeSale('Tarjeta');
         document.getElementById('btnFinalizarVarios').onclick = () => finalizeSale('Varios');
         document.getElementById('btnLimpiar').onclick = () => { cart = []; updateUI(); };
 
