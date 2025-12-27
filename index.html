@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Caja Registradora - v3.2</title>
+    <title>Sistema de Caja Registradora - v3.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -133,8 +133,17 @@
     </div>
 
     <script>
+        // Inicialización segura de datos para evitar errores NaN de versiones antiguas
         let products = JSON.parse(localStorage.getItem('pos_products')) || [{ id: 1, name: "Producto Base", price: 1000 }];
-        let history = JSON.parse(localStorage.getItem('pos_history')) || [];
+        let rawHistory = JSON.parse(localStorage.getItem('pos_history')) || [];
+        
+        // Limpiamos historial corrupto o antiguo que no tenga estructura de v3.2+
+        let history = rawHistory.filter(h => h && (h.total !== undefined || h.price !== undefined)).map(h => {
+            if (h.total === undefined && h.price !== undefined) h.total = h.price; // Fallback para v3.1
+            if (!h.pagos) h.pagos = { [h.metodo || 'Efectivo']: h.total }; // Fallback para v3.1
+            return h;
+        });
+
         let cart = [];
         let payments = []; 
         let isEditMode = false;
@@ -151,7 +160,10 @@
         const searchBox = document.getElementById('searchBox');
         const paymentStatus = document.getElementById('paymentStatus');
 
-        const formatMoney = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
+        const formatMoney = (v) => {
+            const val = parseFloat(v) || 0;
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
+        };
 
         function renderProducts(filter = "") {
             productsGrid.innerHTML = '';
@@ -186,8 +198,8 @@
                 `).join('');
             }
 
-            const cartTotal = cart.reduce((s, i) => s + i.price, 0);
-            const totalPagado = payments.reduce((s, p) => s + p.amount, 0);
+            const cartTotal = cart.reduce((s, i) => s + (parseFloat(i.price) || 0), 0);
+            const totalPagado = payments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
             const pendiente = Math.max(0, cartTotal - totalPagado);
             
             displayTotal.innerText = formatMoney(pendiente);
@@ -196,13 +208,14 @@
             displayCambio.innerText = formatMoney(Math.max(0, montoAbono - pendiente));
 
             if (payments.length > 0) paymentStatus.classList.remove('hidden');
+            else paymentStatus.classList.add('hidden');
         }
 
         function handlePayment(method) {
             if (cart.length === 0) return alert("El carrito está vacío");
 
-            const cartTotal = cart.reduce((s, i) => s + i.price, 0);
-            const totalYaPagado = payments.reduce((s, p) => s + p.amount, 0);
+            const cartTotal = cart.reduce((s, i) => s + (parseFloat(i.price) || 0), 0);
+            const totalYaPagado = payments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
             const pendiente = cartTotal - totalYaPagado;
 
             let montoInput = parseFloat(inputPago.value) || 0;
@@ -218,8 +231,8 @@
                 method: method
             });
 
-            const nuevoTotalPagado = payments.reduce((s, p) => s + p.amount, 0);
-            if (nuevoTotalPagado >= cartTotal) {
+            const nuevoTotalPagado = payments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+            if (nuevoTotalPagado >= cartTotal - 0.01) { // Tolerancia decimal
                 finalizeSale();
             } else {
                 inputPago.value = '';
@@ -233,21 +246,19 @@
             const timestamp = fechaObj.toLocaleString();
             const timeStr = fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            const cartTotal = cart.reduce((s, i) => s + i.price, 0);
+            const cartTotal = cart.reduce((s, i) => s + (parseFloat(i.price) || 0), 0);
             const nombresProductos = cart.map(i => i.name).join(", ");
             
-            // Consolidamos los pagos en un solo objeto para el historial
             const resumenPagos = {};
             payments.forEach(p => {
                 resumenPagos[p.method] = (resumenPagos[p.method] || 0) + p.amount;
             });
 
-            // Creamos una sola entrada de historial con el desglose de pagos
             const newEntry = {
                 id: Date.now(),
                 name: nombresProductos,
                 total: cartTotal,
-                pagos: resumenPagos, // Ej: { Efectivo: 500, Tarjeta: 500 }
+                pagos: resumenPagos,
                 fechaFull: timestamp,
                 fechaCorta: timeStr
             };
@@ -273,24 +284,24 @@
                 return;
             }
             
-            const totalSum = history.reduce((s, h) => s + h.total, 0);
+            const totalSum = history.reduce((s, h) => s + (parseFloat(h.total) || 0), 0);
             historyTotalSum.innerText = formatMoney(totalSum);
 
             salesHistory.innerHTML = history.map(v => {
-                const metodos = Object.keys(v.pagos);
+                const pagos = v.pagos || {};
+                const metodos = Object.keys(pagos);
                 const esMixto = metodos.length > 1;
                 
-                // Color dinámico según método predominante o mixto
                 let borderColor = "border-slate-300";
                 if (!esMixto) {
                     borderColor = metodos[0] === 'Tarjeta' ? 'border-purple-500' : 'border-green-500';
                 } else {
-                    borderColor = 'border-orange-500'; // Color para pagos mixtos
+                    borderColor = 'border-orange-500';
                 }
 
                 const desgloseHTML = metodos.map(m => 
                     `<span class="px-1.5 py-0.5 rounded-md ${m === 'Tarjeta' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'} font-bold">
-                        ${m}: ${formatMoney(v.pagos[m])}
+                        ${m}: ${formatMoney(pagos[m])}
                     </span>`
                 ).join(' ');
 
@@ -299,7 +310,7 @@
                     <div class="flex justify-between items-start">
                         <div class="flex-1 pr-1 truncate">
                             <p class="font-bold text-slate-800 truncate text-[10px]">${v.name}</p>
-                            <p class="text-[8px] text-slate-400 uppercase">${v.fechaCorta} ${esMixto ? '- PAGO MIXTO' : '- ' + metodos[0]}</p>
+                            <p class="text-[8px] text-slate-400 uppercase">${v.fechaCorta} ${esMixto ? '- PAGO MIXTO' : '- ' + (metodos[0] || 'EFECTIVO')}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <p class="font-black text-slate-900 text-xs">${formatMoney(v.total)}</p>
@@ -322,7 +333,6 @@
             }
         }
 
-        // --- BOTONES CONFIG ---
         document.getElementById('btnManualAdd').onclick = () => {
             const price = parseFloat(document.getElementById('inputManualPrice').value);
             const name = document.getElementById('inputManualName').value || "Venta Rápida";
@@ -391,10 +401,10 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.text("Reporte de Ventas", 14, 15);
-            const totalVentas = history.reduce((s, h) => s + h.total, 0);
+            const totalVentas = history.reduce((s, h) => s + (parseFloat(h.total) || 0), 0);
             
             const rows = history.map(v => {
-                const metodosStr = Object.keys(v.pagos).map(m => `${m}: ${formatMoney(v.pagos[m])}`).join(' | ');
+                const metodosStr = Object.keys(v.pagos || {}).map(m => `${m}: ${formatMoney(v.pagos[m])}`).join(' | ');
                 return [v.fechaFull, v.name, metodosStr, formatMoney(v.total)];
             });
             
