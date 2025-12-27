@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Caja Registradora - v2.1</title>
+    <title>Sistema de Caja Registradora - v2.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -101,12 +101,12 @@
 
             <div class="p-4 h-1/2 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="font-bold text-slate-700 text-sm uppercase">📜 Historial</h2>
+                    <h2 class="font-bold text-slate-700 text-sm uppercase">📜 Historial (Desglosado)</h2>
                     <div class="flex gap-2">
-                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700">
+                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700" title="Exportar PDF">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         </button>
-                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600">
+                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar Todo">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
@@ -116,7 +116,7 @@
         </aside>
     </main>
 
-    <!-- Modales -->
+    <!-- Modal Editar -->
     <div id="configModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-80">
             <h3 class="text-xl font-bold mb-4">Editar Producto</h3>
@@ -160,7 +160,7 @@
             products.forEach(p => {
                 const btn = document.createElement('button');
                 btn.className = `p-4 h-24 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition shadow-sm ${isEditMode ? 'border-orange-400 bg-orange-50 animate-pulse' : 'bg-white border-transparent hover:border-blue-500'}`;
-                btn.innerHTML = `<span class="font-bold text-slate-700 text-sm">${p.name}</span><span class="text-blue-600 text-xs">${formatMoney(p.price)}</span>`;
+                btn.innerHTML = `<span class="font-bold text-slate-700 text-sm text-center line-clamp-2">${p.name}</span><span class="text-blue-600 text-xs">${formatMoney(p.price)}</span>`;
                 btn.onclick = () => isEditMode ? openConfig(p.id) : addToCart(p);
                 productsGrid.appendChild(btn);
             });
@@ -168,21 +168,20 @@
         }
 
         function addToCart(p) {
-            cart.push({...p, cartId: Date.now()});
+            cart.push({...p, cartId: Date.now() + Math.random()});
             updateUI();
         }
 
         function updateUI() {
-            // Render Carrito
             if (cart.length === 0) {
                 cartItems.innerHTML = '<p class="text-slate-400 text-center text-xs mt-4 italic">Vacío</p>';
             } else {
                 cartItems.innerHTML = cart.map(item => `
                     <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200 text-xs">
-                        <span class="font-bold">${item.name}</span>
+                        <span class="font-bold truncate max-w-[120px]">${item.name}</span>
                         <div class="flex items-center gap-2">
                             <span>${formatMoney(item.price)}</span>
-                            <button onclick="removeFromCart(${item.cartId})" class="text-red-400">✕</button>
+                            <button onclick="removeFromCart(${item.cartId})" class="text-red-400 font-bold px-1">✕</button>
                         </div>
                     </div>
                 `).join('');
@@ -201,47 +200,51 @@
         }
 
         function finalizeSale(method) {
-            const total = cart.reduce((s, i) => s + i.price, 0);
-            if (total <= 0) return alert("El carrito está vacío");
+            if (cart.length === 0) return alert("El carrito está vacío");
 
             const manualDateVal = document.getElementById('manualDateTime').value;
             const fechaObj = manualDateVal ? new Date(manualDateVal) : new Date();
             
-            const venta = {
-                id: Date.now(),
-                total: total,
+            // CAMBIO CLAVE: Desglosar el carrito en registros individuales para el historial
+            const newEntries = cart.map(item => ({
+                id: Date.now() + Math.random(),
+                name: item.name,
+                price: item.price,
                 metodo: method,
-                items: cart.length,
                 fechaFull: fechaObj.toLocaleString(),
                 fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
+            }));
 
-            // PERSISTENCIA (Paso clave que se estaba perdiendo)
-            history.unshift(venta);
-            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 200))); // Guardamos 200 registros max
+            // Insertar cada item por separado al inicio del historial
+            history = [...newEntries, ...history];
             
-            // Limpiar
+            // Persistir (máximo 500 líneas para no saturar memoria)
+            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 500)));
+            
+            // Limpiar interfaz
             cart = [];
             inputPago.value = '';
             document.getElementById('manualDateTime').value = '';
             
             updateUI();
             renderHistory();
-            alert("Venta guardada en historial");
+            alert("Venta procesada producto por producto en el historial");
         }
 
         function renderHistory() {
             if (history.length === 0) {
-                salesHistory.innerHTML = '<p class="text-center text-slate-400 mt-2">Sin ventas</p>';
+                salesHistory.innerHTML = '<p class="text-center text-slate-400 mt-2">Sin registros</p>';
                 return;
             }
             salesHistory.innerHTML = history.map(v => `
-                <div class="bg-white p-2 rounded border border-slate-200 flex justify-between items-center">
-                    <div>
-                        <p class="font-bold">${formatMoney(v.total)}</p>
-                        <p class="text-slate-400">${v.fechaCorta} - ${v.metodo}</p>
+                <div class="bg-white p-2 rounded border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
+                    <div class="flex-1 pr-2">
+                        <p class="font-bold text-slate-800 truncate">${v.name}</p>
+                        <p class="text-[9px] text-slate-400">${v.fechaCorta} - ${v.metodo}</p>
                     </div>
-                    <span class="bg-slate-100 px-1 rounded">${v.items} p.</span>
+                    <div class="text-right">
+                        <p class="font-bold text-green-600">${formatMoney(v.price)}</p>
+                    </div>
                 </div>
             `).join('');
         }
@@ -264,7 +267,7 @@
         };
 
         document.getElementById('btnAddProduct').onclick = () => {
-            const newP = { id: Date.now(), name: "Nuevo", price: 0 };
+            const newP = { id: Date.now(), name: "Nuevo Producto", price: 0 };
             products.push(newP);
             localStorage.setItem('pos_products', JSON.stringify(products));
             renderProducts();
@@ -300,22 +303,27 @@
         inputPago.oninput = updateUI;
 
         document.getElementById('btnClearHistory').onclick = () => {
-            if(confirm("¿Borrar historial?")) {
+            if(confirm("¿Seguro que deseas borrar TODO el historial de productos?")) {
                 history = [];
                 localStorage.setItem('pos_history', JSON.stringify([]));
                 renderHistory();
             }
         };
 
-        // Exportar PDF
+        // Exportar PDF desglosado
         document.getElementById('btnExportPDF').onclick = () => {
             if (history.length === 0) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("Historial de Ventas", 14, 15);
-            const rows = history.map(v => [v.fechaFull, v.metodo, v.items, formatMoney(v.total)]);
-            doc.autoTable({ head: [['Fecha', 'Método', 'Items', 'Total']], body: rows, startY: 20 });
-            doc.save("reporte.pdf");
+            doc.text("Reporte Detallado de Ventas", 14, 15);
+            const rows = history.map(v => [v.fechaFull, v.name, v.metodo, formatMoney(v.price)]);
+            doc.autoTable({ 
+                head: [['Fecha/Hora', 'Producto', 'Método', 'Precio']], 
+                body: rows, 
+                startY: 20,
+                theme: 'striped'
+            });
+            doc.save("cuadre_caja_detallado.pdf");
         };
 
         // --- INIT ---
