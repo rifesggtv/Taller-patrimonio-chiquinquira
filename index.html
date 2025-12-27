@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Caja Registradora</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para generar PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -92,9 +95,23 @@
 
             <!-- Historial de Ventas -->
             <div class="p-4 h-1/2 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
-                <h2 class="font-bold text-slate-700 mb-2 flex items-center gap-2 text-sm uppercase tracking-wider">
-                    📜 Historial de Ventas
-                </h2>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
+                        📜 Historial
+                    </h2>
+                    <div class="flex gap-2">
+                        <button id="btnExportPDF" title="Exportar a PDF" class="text-blue-500 hover:text-blue-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </button>
+                        <button id="btnClearHistory" title="Borrar Historial" class="text-red-400 hover:text-red-600 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
                 <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-2 text-xs">
                     <!-- Registros históricos -->
                 </div>
@@ -148,6 +165,8 @@
         const btnToggleEdit = document.getElementById('toggleEdit');
         const btnAddProduct = document.getElementById('btnAddProduct');
         const productCounter = document.getElementById('productCounter');
+        const btnExportPDF = document.getElementById('btnExportPDF');
+        const btnClearHistory = document.getElementById('btnClearHistory');
 
         const formatMoney = (amount) => {
             return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
@@ -235,13 +254,14 @@
             const venta = {
                 id: Date.now(),
                 total: total,
+                fullFecha: new Date().toLocaleString(),
                 fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 items: cart.length,
                 metodo: method
             };
 
             history.unshift(venta);
-            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 50)));
+            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 100))); // Aumentado a 100 para PDF
             
             cart = [];
             inputPago.value = '';
@@ -254,6 +274,10 @@
         document.getElementById('btnLimpiar').onclick = () => { cart = []; updateUI(); };
 
         function renderHistory() {
+            if (history.length === 0) {
+                salesHistory.innerHTML = '<p class="text-slate-400 text-center mt-4 italic">No hay ventas registradas</p>';
+                return;
+            }
             salesHistory.innerHTML = history.map(v => `
                 <div class="bg-white p-3 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
                     <div class="flex items-center gap-3">
@@ -270,6 +294,51 @@
                 </div>
             `).join('');
         }
+
+        // Exportar a PDF
+        btnExportPDF.onclick = () => {
+            if (history.length === 0) return alertMessage("Nada que exportar", "bg-yellow-500");
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text("Reporte de Ventas", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 14, 28);
+
+            const tableData = history.map(v => [
+                v.fullFecha,
+                v.metodo,
+                v.items,
+                formatMoney(v.total)
+            ]);
+
+            const totalAcumulado = history.reduce((sum, v) => sum + v.total, 0);
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Fecha y Hora', 'Método', 'Productos', 'Total']],
+                body: tableData,
+                foot: [['', '', 'TOTAL ACUMULADO:', formatMoney(totalAcumulado)]],
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] }
+            });
+
+            doc.save(`ventas_${new Date().toISOString().slice(0,10)}.pdf`);
+            alertMessage("PDF generado con éxito", "bg-blue-600");
+        };
+
+        // Borrar Historial
+        btnClearHistory.onclick = () => {
+            if (history.length === 0) return;
+            if (confirm("¿Estás seguro de que quieres borrar todo el historial? Esta acción no se puede deshacer.")) {
+                history = [];
+                localStorage.setItem('pos_history', JSON.stringify(history));
+                updateUI();
+                alertMessage("Historial borrado", "bg-red-600");
+            }
+        };
 
         // Gestión de Productos
         btnAddProduct.onclick = () => {
