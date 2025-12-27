@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Caja Registradora</title>
+    <title>Sistema de Caja Registradora - v2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería para generar PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -13,7 +12,6 @@
         body { font-family: 'Inter', sans-serif; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        input[type="datetime-local"] { appearance: none; -webkit-appearance: none; }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col">
@@ -40,277 +38,218 @@
     </header>
 
     <main class="flex-1 flex overflow-hidden">
-        
-        <!-- Sección Izquierda: Productos y Venta Actual -->
+        <!-- Sección Izquierda: Productos y Venta -->
         <div class="flex-1 p-6 flex flex-col gap-6 overflow-y-auto custom-scroll">
             
-            <!-- Entrada de Producto Rápido -->
+            <!-- Venta Rápida -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Venta Rápida (Producto sin botón)</label>
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                     <div class="md:col-span-7">
-                        <input type="text" id="inputManualName" placeholder="Nombre del producto (ej. Aguacate)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-700">
+                        <input type="text" id="inputManualName" placeholder="Nombre (opcional)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div class="md:col-span-3">
-                        <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-bold">
+                        <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold">
                     </div>
                     <div class="md:col-span-2">
-                        <button id="btnManualAdd" class="w-full h-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                            </svg>
+                        <button id="btnManualAdd" class="w-full h-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition active:scale-95 shadow-sm">
                             Añadir
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Grid de Productos -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="productsGrid"></div>
 
-            <!-- Panel de Cálculo de Pago -->
+            <!-- Panel de Pago -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-auto">
-                <h2 class="text-lg font-bold mb-4 text-slate-700">Finalizar Venta</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
                     <div>
                         <p class="text-sm text-slate-500 mb-1">Total a Pagar</p>
-                        <p class="text-3xl font-bold text-blue-600" id="displayTotal">$0.00</p>
+                        <p class="text-3xl font-bold text-blue-600" id="displayTotal">$0</p>
                     </div>
                     <div>
                         <label class="block text-sm text-slate-500 mb-1">Paga con:</label>
-                        <input type="number" id="inputPago" placeholder="0.00" class="w-full p-3 border border-slate-300 rounded-lg text-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="number" id="inputPago" placeholder="0" class="w-full p-3 border border-slate-300 rounded-lg text-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Vueltas (Cambio):</p>
-                        <p class="text-3xl font-bold text-green-600" id="displayCambio">$0.00</p>
+                        <p class="text-sm text-slate-500 mb-1">Vueltas:</p>
+                        <p class="text-3xl font-bold text-green-600" id="displayCambio">$0</p>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <!-- Selector de Fecha Manual -->
-                        <div class="mb-2">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha/Hora Manual:</label>
-                            <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
-                        </div>
-
-                        <button id="btnFinalizarDirect" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2 text-sm">
-                            ⚡ Venta Rápida (Exacto)
-                        </button>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">Fecha/Hora Manual (Opcional):</label>
+                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-xs bg-slate-50">
+                        
                         <div class="grid grid-cols-2 gap-2">
-                            <button id="btnFinalizarCash" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 text-xs">
-                                💵 Efectivo
-                            </button>
-                            <button id="btnFinalizarCargo" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 text-xs">
-                                💳 Tarjeta
-                            </button>
+                            <button onclick="finalizeSale('Efectivo')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-xs shadow-md">💵 Efectivo</button>
+                            <button onclick="finalizeSale('Tarjeta')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-xs shadow-md">💳 Tarjeta</button>
                         </div>
                     </div>
                 </div>
                 <div class="mt-4 flex gap-4">
-                    <button id="btnLimpiar" class="text-xs text-slate-400 hover:text-red-500 transition underline">
-                        Vaciar carrito actual
-                    </button>
+                    <button id="btnLimpiar" class="text-xs text-slate-400 hover:text-red-500 underline">Vaciar carrito</button>
                 </div>
             </div>
         </div>
 
-        <!-- Sección Derecha: Detalle y Historial -->
-        <aside class="w-96 bg-white border-l border-slate-200 flex flex-col">
-            <!-- Detalle Carrito -->
+        <!-- Barra Lateral: Carrito e Historial -->
+        <aside class="w-80 bg-white border-l border-slate-200 flex flex-col">
             <div class="p-4 border-b border-slate-100 flex-1 flex flex-col overflow-hidden">
-                <h2 class="font-bold text-slate-700 mb-2 flex items-center gap-2 text-sm uppercase">
-                    🛒 Carrito Actual
-                </h2>
-                <div id="cartItems" class="flex-1 overflow-y-auto custom-scroll space-y-2 py-2">
-                    <p class="text-slate-400 text-sm italic text-center mt-4">El carrito está vacío</p>
-                </div>
+                <h2 class="font-bold text-slate-700 mb-2">🛒 Carrito</h2>
+                <div id="cartItems" class="flex-1 overflow-y-auto custom-scroll space-y-2"></div>
             </div>
 
-            <!-- Historial de Ventas -->
             <div class="p-4 h-1/2 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
-                        📜 Historial
-                    </h2>
+                    <h2 class="font-bold text-slate-700 text-sm uppercase">📜 Historial</h2>
                     <div class="flex gap-2">
-                        <button id="btnExportPDF" title="Exportar a PDF" class="text-blue-500 hover:text-blue-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
+                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         </button>
-                        <button id="btnClearHistory" title="Borrar Historial" class="text-red-400 hover:text-red-600 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
                 </div>
-                <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-3 text-xs"></div>
+                <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-2 text-[10px]"></div>
             </div>
         </aside>
     </main>
 
-    <!-- Modal de Configuración -->
+    <!-- Modales -->
     <div id="configModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-96">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80">
             <h3 class="text-xl font-bold mb-4">Editar Producto</h3>
             <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-600">Nombre:</label>
-                    <input type="text" id="editName" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-600">Precio:</label>
-                    <input type="number" id="editPrice" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
+                <input type="text" id="editName" placeholder="Nombre" class="w-full p-2 border rounded-lg">
+                <input type="number" id="editPrice" placeholder="Precio" class="w-full p-2 border rounded-lg">
             </div>
-            <div class="mt-6 flex gap-2">
-                <button id="saveConfig" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">Guardar</button>
-                <button id="deleteProduct" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg font-bold">Eliminar</button>
-                <button id="closeModal" class="flex-1 bg-slate-200 text-slate-600 py-2 rounded-lg">Cancelar</button>
+            <div class="mt-6 flex flex-col gap-2">
+                <button id="saveConfig" class="bg-blue-600 text-white py-2 rounded-lg font-bold">Guardar</button>
+                <button id="deleteProduct" class="text-red-600 text-sm">Eliminar botón</button>
+                <button id="closeModal" class="text-slate-400 text-sm">Cancelar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Funciones de utilidad
-        const formatMoney = (amount) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
-        
-        // Poner la fecha actual en el input manual al cargar
-        function setNowInInput() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('manualDateTime').value = now.toISOString().slice(0, 16);
-        }
-
-        // Estado inicial
+        // --- ESTADO ---
         let products = JSON.parse(localStorage.getItem('pos_products')) || [
-            { id: 1, name: "Pan", price: 500 },
-            { id: 2, name: "Papas", price: 600 }
+            { id: 1, name: "Producto Base", price: 1000 }
         ];
-        let cart = [];
         let history = JSON.parse(localStorage.getItem('pos_history')) || [];
-        let editingId = null;
+        let cart = [];
         let isEditMode = false;
+        let editingId = null;
 
-        // Elementos DOM
+        // --- DOM ---
         const productsGrid = document.getElementById('productsGrid');
         const cartItems = document.getElementById('cartItems');
         const displayTotal = document.getElementById('displayTotal');
         const inputPago = document.getElementById('inputPago');
         const displayCambio = document.getElementById('displayCambio');
         const salesHistory = document.getElementById('salesHistory');
-        const manualDateTime = document.getElementById('manualDateTime');
+        const configModal = document.getElementById('configModal');
 
-        // Renderizado de productos
+        // --- UTILIDADES ---
+        const formatMoney = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
+
+        // --- LÓGICA CORE ---
         function renderProducts() {
             productsGrid.innerHTML = '';
             products.forEach(p => {
-                const button = document.createElement('button');
-                button.className = `p-4 h-28 rounded-xl border-2 transition flex flex-col items-center justify-center gap-1 shadow-sm relative ${isEditMode ? 'border-dashed border-orange-400 bg-orange-50 animate-pulse' : 'border-white bg-white hover:border-blue-500 hover:shadow-md'}`;
-                button.innerHTML = `
-                    <span class="font-bold text-slate-700 text-center leading-tight text-sm">${p.name}</span>
-                    <span class="text-blue-600 font-semibold">${formatMoney(p.price)}</span>
-                `;
-                button.onclick = () => isEditMode ? openConfig(p.id) : addToCart(p);
-                productsGrid.appendChild(button);
+                const btn = document.createElement('button');
+                btn.className = `p-4 h-24 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition shadow-sm ${isEditMode ? 'border-orange-400 bg-orange-50 animate-pulse' : 'bg-white border-transparent hover:border-blue-500'}`;
+                btn.innerHTML = `<span class="font-bold text-slate-700 text-sm">${p.name}</span><span class="text-blue-600 text-xs">${formatMoney(p.price)}</span>`;
+                btn.onclick = () => isEditMode ? openConfig(p.id) : addToCart(p);
+                productsGrid.appendChild(btn);
             });
-            document.getElementById('productCounter').innerText = `${products.length} productos`;
+            document.getElementById('productCounter').innerText = `${products.length} Botones`;
         }
 
-        function addToCart(product) {
-            cart.push({...product, cartId: Date.now()});
-            updateUI();
-        }
-
-        function removeFromCart(cartId) {
-            cart = cart.filter(item => item.cartId !== cartId);
+        function addToCart(p) {
+            cart.push({...p, cartId: Date.now()});
             updateUI();
         }
 
         function updateUI() {
+            // Render Carrito
             if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-slate-400 text-sm italic text-center mt-4">El carrito está vacío</p>';
+                cartItems.innerHTML = '<p class="text-slate-400 text-center text-xs mt-4 italic">Vacío</p>';
             } else {
                 cartItems.innerHTML = cart.map(item => `
-                    <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-                        <div class="overflow-hidden">
-                            <p class="font-bold text-slate-700 text-xs truncate">${item.name}</p>
-                            <p class="text-blue-600 text-[10px]">${formatMoney(item.price)}</p>
+                    <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200 text-xs">
+                        <span class="font-bold">${item.name}</span>
+                        <div class="flex items-center gap-2">
+                            <span>${formatMoney(item.price)}</span>
+                            <button onclick="removeFromCart(${item.cartId})" class="text-red-400">✕</button>
                         </div>
-                        <button onclick="removeFromCart(${item.cartId})" class="text-red-400 hover:text-red-600 p-1">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
                     </div>
                 `).join('');
             }
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            displayTotal.innerText = formatMoney(total);
-            calculateChange();
-            renderHistory();
-        }
 
-        function calculateChange() {
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            displayTotal.innerText = formatMoney(total);
+            
             const pago = parseFloat(inputPago.value) || 0;
             displayCambio.innerText = formatMoney(Math.max(0, pago - total));
         }
 
-        function finalizeSale(method, ignorePago = false) {
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            if (total === 0) return alertMessage("Carrito vacío", "bg-yellow-500");
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.cartId !== id);
+            updateUI();
+        }
 
-            const pago = parseFloat(inputPago.value) || (ignorePago ? total : 0);
-            if (!ignorePago && pago < total) return alertMessage("Monto insuficiente", "bg-red-500");
+        function finalizeSale(method) {
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            if (total <= 0) return alert("El carrito está vacío");
 
-            // Obtener fecha del input manual
-            const customDateStr = manualDateTime.value;
-            const dateObj = customDateStr ? new Date(customDateStr) : new Date();
-
+            const manualDateVal = document.getElementById('manualDateTime').value;
+            const fechaObj = manualDateVal ? new Date(manualDateVal) : new Date();
+            
             const venta = {
                 id: Date.now(),
-                total,
-                pago,
-                cambio: Math.max(0, pago - total),
+                total: total,
                 metodo: method,
-                fechaFull: dateObj.toLocaleString(),
-                fechaHora: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                items: cart.map(i => ({ name: i.name, price: i.price }))
+                items: cart.length,
+                fechaFull: fechaObj.toLocaleString(),
+                fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
+            // PERSISTENCIA (Paso clave que se estaba perdiendo)
             history.unshift(venta);
-            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 100)));
+            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 200))); // Guardamos 200 registros max
             
+            // Limpiar
             cart = [];
             inputPago.value = '';
-            setNowInInput(); // Resetear hora para la próxima venta
+            document.getElementById('manualDateTime').value = '';
+            
             updateUI();
-            alertMessage("Venta guardada exitosamente", "bg-green-600");
+            renderHistory();
+            alert("Venta guardada en historial");
         }
 
         function renderHistory() {
-            salesHistory.innerHTML = history.length === 0 ? 
-                '<p class="text-slate-400 text-center mt-4 italic">No hay registros</p>' : 
-                history.map(v => `
-                    <div class="bg-white p-3 rounded-lg border border-slate-200">
-                        <div class="flex justify-between mb-1">
-                            <span class="font-bold text-slate-800">${v.fechaHora}</span>
-                            <span class="text-[9px] px-1 bg-slate-100 rounded text-slate-500">${v.metodo}</span>
-                        </div>
-                        <div class="space-y-1 mb-2">
-                            ${v.items.map(i => `<div class="flex justify-between text-slate-500"><span>${i.name}</span><span>${formatMoney(i.price)}</span></div>`).join('')}
-                        </div>
-                        <div class="flex justify-between border-t pt-1 font-bold">
-                            <span class="text-slate-400 text-[10px]">Total:</span>
-                            <span class="text-blue-600">${formatMoney(v.total)}</span>
-                        </div>
-                        <div class="text-[9px] text-slate-400">Vueltas: ${formatMoney(v.cambio)}</div>
+            if (history.length === 0) {
+                salesHistory.innerHTML = '<p class="text-center text-slate-400 mt-2">Sin ventas</p>';
+                return;
+            }
+            salesHistory.innerHTML = history.map(v => `
+                <div class="bg-white p-2 rounded border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">${formatMoney(v.total)}</p>
+                        <p class="text-slate-400">${v.fechaCorta} - ${v.metodo}</p>
                     </div>
-                `).join('');
+                    <span class="bg-slate-100 px-1 rounded">${v.items} p.</span>
+                </div>
+            `).join('');
         }
 
-        // Eventos
+        // --- EVENTOS ---
         document.getElementById('btnManualAdd').onclick = () => {
             const price = parseFloat(document.getElementById('inputManualPrice').value);
-            const name = document.getElementById('inputManualName').value.trim() || "Vario";
+            const name = document.getElementById('inputManualName').value || "Venta Rápida";
             if (price > 0) {
                 addToCart({ name, price });
                 document.getElementById('inputManualPrice').value = '';
@@ -318,17 +257,9 @@
             }
         };
 
-        document.getElementById('btnFinalizarDirect').onclick = () => finalizeSale('Efectivo', true);
-        document.getElementById('btnFinalizarCash').onclick = () => finalizeSale('Efectivo');
-        document.getElementById('btnFinalizarCargo').onclick = () => finalizeSale('Tarjeta');
-        document.getElementById('btnLimpiar').onclick = () => { cart = []; updateUI(); };
-        inputPago.oninput = calculateChange;
-
-        // Gestión de botones
-        document.getElementById('toggleEdit').onclick = function() {
+        document.getElementById('toggleEdit').onclick = () => {
             isEditMode = !isEditMode;
-            this.innerText = isEditMode ? "Finalizar Edición" : "Configurar Botones";
-            this.classList.toggle('bg-orange-600');
+            document.getElementById('toggleEdit').innerText = isEditMode ? "Salir de Config." : "Configurar Botones";
             renderProducts();
         };
 
@@ -345,52 +276,51 @@
             const p = products.find(x => x.id === id);
             document.getElementById('editName').value = p.name;
             document.getElementById('editPrice').value = p.price;
-            document.getElementById('configModal').classList.remove('hidden');
+            configModal.classList.remove('hidden');
         }
 
         document.getElementById('saveConfig').onclick = () => {
-            products = products.map(p => p.id === editingId ? { ...p, name: document.getElementById('editName').value, price: parseFloat(document.getElementById('editPrice').value) || 0 } : p);
+            const name = document.getElementById('editName').value;
+            const price = parseFloat(document.getElementById('editPrice').value) || 0;
+            products = products.map(p => p.id === editingId ? { ...p, name, price } : p);
             localStorage.setItem('pos_products', JSON.stringify(products));
-            document.getElementById('configModal').classList.add('hidden');
+            configModal.classList.add('hidden');
             renderProducts();
         };
 
         document.getElementById('deleteProduct').onclick = () => {
             products = products.filter(p => p.id !== editingId);
             localStorage.setItem('pos_products', JSON.stringify(products));
-            document.getElementById('configModal').classList.add('hidden');
+            configModal.classList.add('hidden');
             renderProducts();
         };
 
-        document.getElementById('closeModal').onclick = () => document.getElementById('configModal').classList.add('hidden');
+        document.getElementById('closeModal').onclick = () => configModal.classList.add('hidden');
+        document.getElementById('btnLimpiar').onclick = () => { cart = []; updateUI(); };
+        inputPago.oninput = updateUI;
 
         document.getElementById('btnClearHistory').onclick = () => {
-            if(confirm("¿Borrar historial?")) { history = []; localStorage.setItem('pos_history', '[]'); renderHistory(); }
+            if(confirm("¿Borrar historial?")) {
+                history = [];
+                localStorage.setItem('pos_history', JSON.stringify([]));
+                renderHistory();
+            }
         };
 
+        // Exportar PDF
         document.getElementById('btnExportPDF').onclick = () => {
+            if (history.length === 0) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("Historial de Ventas Manual", 10, 10);
-            const data = [];
-            history.forEach(v => {
-                data.push([v.fechaFull, v.metodo, v.items.map(i => i.name).join(", "), formatMoney(v.total)]);
-            });
-            doc.autoTable({ head: [['Fecha', 'Metodo', 'Productos', 'Total']], body: data });
-            doc.save("ventas.pdf");
+            doc.text("Historial de Ventas", 14, 15);
+            const rows = history.map(v => [v.fechaFull, v.metodo, v.items, formatMoney(v.total)]);
+            doc.autoTable({ head: [['Fecha', 'Método', 'Items', 'Total']], body: rows, startY: 20 });
+            doc.save("reporte.pdf");
         };
 
-        function alertMessage(msg, color) {
-            const d = document.createElement('div');
-            d.className = `fixed bottom-5 left-1/2 -translate-x-1/2 ${color} text-white px-6 py-2 rounded-full z-50 animate-bounce text-sm font-bold`;
-            d.innerText = msg;
-            document.body.appendChild(d);
-            setTimeout(() => d.remove(), 2000);
-        }
-
-        // Inicio
-        setNowInInput();
+        // --- INIT ---
         renderProducts();
+        renderHistory();
         updateUI();
     </script>
 </body>
