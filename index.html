@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Caja Registradora - v2.3</title>
+    <title>Sistema de Caja Registradora - v3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -12,12 +12,13 @@
         body { font-family: 'Inter', sans-serif; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .products-container { height: calc(100vh - 280px); }
     </style>
 </head>
-<body class="bg-slate-50 h-screen flex flex-col">
+<body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
 
     <!-- Encabezado -->
-    <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
+    <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-20">
         <div class="flex items-center gap-4">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,86 +39,78 @@
     </header>
 
     <main class="flex-1 flex overflow-hidden">
-        <!-- Sección Izquierda: Productos y Venta -->
-        <div class="flex-1 p-6 flex flex-col gap-6 overflow-y-auto custom-scroll">
+        <!-- Sección Izquierda -->
+        <div class="flex-1 flex flex-col relative">
             
-            <!-- Venta Rápida -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Venta Rápida (Producto sin botón)</label>
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-7">
-                        <input type="text" id="inputManualName" placeholder="Nombre (opcional)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div class="md:col-span-3">
-                        <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold">
-                    </div>
-                    <div class="md:col-span-2">
-                        <button id="btnManualAdd" class="w-full h-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition active:scale-95 shadow-sm">
-                            Añadir
-                        </button>
-                    </div>
+            <!-- Barra de Búsqueda -->
+            <div class="bg-white p-4 shadow-sm border-b border-slate-200 z-10 space-y-3">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </span>
+                    <input type="text" id="searchBox" placeholder="Buscar producto por nombre..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
+                </div>
+                
+                <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase ml-2">Rápido:</span>
+                    <input type="text" id="inputManualName" placeholder="Nombre" class="flex-1 p-2 text-sm border border-slate-300 rounded-lg outline-none">
+                    <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-32 p-2 text-sm border border-slate-300 rounded-lg outline-none font-bold">
+                    <button id="btnManualAdd" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm">Añadir</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="productsGrid"></div>
+            <!-- Grilla de Productos -->
+            <div class="flex-1 p-6 overflow-y-auto custom-scroll products-container" id="productsGrid"></div>
 
-            <!-- Panel de Pago -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-auto">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                    <div>
-                        <p class="text-sm text-slate-500 mb-1">Total a Pagar</p>
-                        <p class="text-3xl font-bold text-blue-600" id="displayTotal">$0</p>
+            <!-- Panel de Pago (FIJO INFERIOR) -->
+            <div class="bg-white p-4 border-t-2 border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end max-w-6xl mx-auto">
+                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                        <p class="text-[10px] font-bold text-blue-400 uppercase mb-1">Total Pendiente</p>
+                        <p class="text-3xl font-black text-blue-600" id="displayTotal">$0</p>
                     </div>
                     <div>
-                        <label class="block text-sm text-slate-500 mb-1">Paga con:</label>
-                        <input type="number" id="inputPago" placeholder="0" class="w-full p-3 border border-slate-300 rounded-lg text-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Monto a abonar:</label>
+                        <input type="number" id="inputPago" placeholder="0" class="w-full p-2 border border-slate-300 rounded-lg text-2xl font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-yellow-50">
                     </div>
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Vueltas:</p>
-                        <p class="text-3xl font-bold text-green-600" id="displayCambio">$0</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Vueltas / Cambio:</p>
+                        <p class="text-3xl font-black text-green-600" id="displayCambio">$0</p>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase">Fecha/Hora Manual (Opcional):</label>
-                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-xs bg-slate-50">
-                        
+                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-[10px] bg-slate-50">
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="finalizeSale('Efectivo')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-xs shadow-md">💵 Efectivo</button>
-                            <button onclick="finalizeSale('Tarjeta')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-xs shadow-md">💳 Tarjeta</button>
+                            <button onclick="handlePayment('Efectivo')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl text-xs shadow-md transition transform active:scale-95">💵 Efectivo</button>
+                            <button onclick="handlePayment('Tarjeta')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-xl text-xs shadow-md transition transform active:scale-95">💳 Tarjeta</button>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 flex gap-4">
-                    <button id="btnLimpiar" class="text-xs text-slate-400 hover:text-red-500 underline">Vaciar carrito</button>
+                <div class="mt-2 text-center flex justify-center gap-4">
+                    <button id="btnLimpiar" class="text-[10px] text-slate-400 hover:text-red-500 underline uppercase tracking-widest font-bold">Cancelar Venta</button>
+                    <span id="paymentStatus" class="text-[10px] font-bold text-orange-500 uppercase italic hidden">Pago parcial iniciado...</span>
                 </div>
             </div>
         </div>
 
-        <!-- Barra Lateral: Carrito e Historial -->
-        <aside class="w-80 bg-white border-l border-slate-200 flex flex-col">
-            <div class="p-4 border-b border-slate-100 flex-1 flex flex-col overflow-hidden">
+        <!-- Barra Lateral -->
+        <aside class="w-80 bg-white border-l border-slate-200 flex flex-col z-30">
+            <div class="p-4 border-b border-slate-100 h-1/3 flex flex-col overflow-hidden">
                 <h2 class="font-bold text-slate-700 mb-2">🛒 Carrito</h2>
                 <div id="cartItems" class="flex-1 overflow-y-auto custom-scroll space-y-2"></div>
             </div>
 
-            <div class="p-4 h-3/5 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
+            <div class="p-4 flex-1 border-t border-slate-100 bg-slate-50 flex flex-col overflow-hidden">
                 <div class="flex justify-between items-center mb-1">
-                    <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial Detallado</h2>
+                    <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial</h2>
                     <div class="flex gap-2">
-                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700" title="Exportar PDF">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        </button>
-                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar Todo">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></button>
+                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                     </div>
                 </div>
-
-                <!-- Resumen de Ventas en Historial -->
                 <div class="bg-blue-100 p-2 rounded-lg mb-2 flex justify-between items-center border border-blue-200">
-                    <span class="text-[10px] font-bold text-blue-700 uppercase">Venta Total:</span>
+                    <span class="text-[10px] font-bold text-blue-700">Venta Total:</span>
                     <span id="historyTotalSum" class="font-black text-blue-800 text-sm">$0</span>
                 </div>
-
                 <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-2 text-[10px]"></div>
             </div>
         </aside>
@@ -140,16 +133,13 @@
     </div>
 
     <script>
-        // --- ESTADO ---
-        let products = JSON.parse(localStorage.getItem('pos_products')) || [
-            { id: 1, name: "Producto Base", price: 1000 }
-        ];
+        let products = JSON.parse(localStorage.getItem('pos_products')) || [{ id: 1, name: "Producto Base", price: 1000 }];
         let history = JSON.parse(localStorage.getItem('pos_history')) || [];
         let cart = [];
+        let payments = []; // Almacena abonos parciales antes de cerrar la venta
         let isEditMode = false;
         let editingId = null;
 
-        // --- DOM ---
         const productsGrid = document.getElementById('productsGrid');
         const cartItems = document.getElementById('cartItems');
         const displayTotal = document.getElementById('displayTotal');
@@ -158,22 +148,25 @@
         const salesHistory = document.getElementById('salesHistory');
         const configModal = document.getElementById('configModal');
         const historyTotalSum = document.getElementById('historyTotalSum');
+        const searchBox = document.getElementById('searchBox');
+        const paymentStatus = document.getElementById('paymentStatus');
 
-        // --- UTILIDADES ---
         const formatMoney = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
 
-        // --- LÓGICA CORE ---
-        function renderProducts() {
+        function renderProducts(filter = "") {
             productsGrid.innerHTML = '';
-            products.forEach(p => {
+            const filtered = products.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+            filtered.forEach(p => {
                 const btn = document.createElement('button');
                 btn.className = `p-4 h-24 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition shadow-sm ${isEditMode ? 'border-orange-400 bg-orange-50 animate-pulse' : 'bg-white border-transparent hover:border-blue-500'}`;
-                btn.innerHTML = `<span class="font-bold text-slate-700 text-sm text-center line-clamp-2">${p.name}</span><span class="text-blue-600 text-xs">${formatMoney(p.price)}</span>`;
+                btn.innerHTML = `<span class="font-bold text-slate-700 text-xs text-center line-clamp-2">${p.name}</span><span class="text-blue-600 text-[10px]">${formatMoney(p.price)}</span>`;
                 btn.onclick = () => isEditMode ? openConfig(p.id) : addToCart(p);
                 productsGrid.appendChild(btn);
             });
             document.getElementById('productCounter').innerText = `${products.length} Botones`;
         }
+
+        searchBox.addEventListener('input', (e) => renderProducts(e.target.value));
 
         function addToCart(p) {
             cart.push({...p, cartId: Date.now() + Math.random()});
@@ -183,62 +176,104 @@
         function updateUI() {
             if (cart.length === 0) {
                 cartItems.innerHTML = '<p class="text-slate-400 text-center text-xs mt-4 italic">Vacío</p>';
+                paymentStatus.classList.add('hidden');
             } else {
                 cartItems.innerHTML = cart.map(item => `
                     <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200 text-xs">
                         <span class="font-bold truncate max-w-[120px]">${item.name}</span>
-                        <div class="flex items-center gap-2">
-                            <span>${formatMoney(item.price)}</span>
-                            <button onclick="removeFromCart(${item.cartId})" class="text-red-400 font-bold px-1">✕</button>
-                        </div>
+                        <span>${formatMoney(item.price)}</span>
                     </div>
                 `).join('');
             }
 
-            const total = cart.reduce((s, i) => s + i.price, 0);
-            displayTotal.innerText = formatMoney(total);
+            const cartTotal = cart.reduce((s, i) => s + i.price, 0);
+            const totalPagado = payments.reduce((s, p) => s + p.amount, 0);
+            const pendiente = Math.max(0, cartTotal - totalPagado);
             
-            const pago = parseFloat(inputPago.value) || 0;
-            displayCambio.innerText = formatMoney(Math.max(0, pago - total));
+            displayTotal.innerText = formatMoney(pendiente);
+            
+            const montoAbono = parseFloat(inputPago.value) || 0;
+            // Solo mostrar vueltas si el abono supera el pendiente
+            displayCambio.innerText = formatMoney(Math.max(0, montoAbono - pendiente));
+
+            if (payments.length > 0) paymentStatus.classList.remove('hidden');
         }
 
-        function removeFromCart(id) {
-            cart = cart.filter(i => i.cartId !== id);
-            updateUI();
-        }
-
-        function finalizeSale(method) {
+        function handlePayment(method) {
             if (cart.length === 0) return alert("El carrito está vacío");
 
+            const cartTotal = cart.reduce((s, i) => s + i.price, 0);
+            const totalYaPagado = payments.reduce((s, p) => s + p.amount, 0);
+            const pendiente = cartTotal - totalYaPagado;
+
+            let montoInput = parseFloat(inputPago.value) || 0;
+
+            // Caso 1: No puso nada en el input (asumimos que paga el resto completo con ese botón)
+            if (montoInput === 0) {
+                montoInput = pendiente;
+            }
+
+            // Caso 2: Puso más de lo pendiente (registramos solo el pendiente, el resto es vuelta)
+            const montoRealAAbonar = Math.min(montoInput, pendiente);
+
+            payments.push({
+                amount: montoRealAAbonar,
+                method: method
+            });
+
+            // Si ya cubrimos el total, cerramos la venta
+            const nuevoTotalPagado = payments.reduce((s, p) => s + p.amount, 0);
+            if (nuevoTotalPagado >= cartTotal) {
+                finalizeSale();
+            } else {
+                // Si falta dinero, limpiamos input y actualizamos UI para seguir abonando
+                inputPago.value = '';
+                updateUI();
+            }
+        }
+
+        function finalizeSale() {
             const manualDateVal = document.getElementById('manualDateTime').value;
             const fechaObj = manualDateVal ? new Date(manualDateVal) : new Date();
+            const timestamp = fechaObj.toLocaleString();
+            const timeStr = fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Agrupamos los productos y los métodos de pago en el historial
+            // Creamos un registro por cada método de pago utilizado en esta venta
+            const resMetodos = {};
+            payments.forEach(p => {
+                resMetodos[p.method] = (resMetodos[p.method] || 0) + p.amount;
+            });
+
+            const newEntries = [];
             
-            const newEntries = cart.map(item => ({
-                id: Date.now() + Math.random(),
-                name: item.name,
-                price: item.price,
-                metodo: method,
-                fechaFull: fechaObj.toLocaleString(),
-                fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }));
+            // Si hubo varios productos, los unimos en una sola descripción para el historial
+            const nombresProductos = cart.map(i => i.name).join(", ");
+            
+            Object.keys(resMetodos).forEach(m => {
+                newEntries.push({
+                    id: Date.now() + Math.random(),
+                    name: nombresProductos,
+                    price: resMetodos[m],
+                    metodo: m,
+                    fechaFull: timestamp,
+                    fechaCorta: timeStr
+                });
+            });
 
             history = [...newEntries, ...history];
-            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 500)));
+            localStorage.setItem('pos_history', JSON.stringify(history.slice(0, 1000)));
             
+            // Reset completo
             cart = [];
+            payments = [];
             inputPago.value = '';
             document.getElementById('manualDateTime').value = '';
+            searchBox.value = '';
             
             updateUI();
             renderHistory();
-        }
-
-        function removeHistoryItem(id) {
-            if(confirm("¿Eliminar este registro del historial?")) {
-                history = history.filter(h => h.id !== id);
-                localStorage.setItem('pos_history', JSON.stringify(history));
-                renderHistory();
-            }
+            renderProducts();
         }
 
         function renderHistory() {
@@ -247,27 +282,31 @@
                 historyTotalSum.innerText = formatMoney(0);
                 return;
             }
-
             const totalSum = history.reduce((s, h) => s + h.price, 0);
             historyTotalSum.innerText = formatMoney(totalSum);
-
             salesHistory.innerHTML = history.map(v => `
-                <div class="bg-white p-2 rounded border-l-4 border-blue-500 shadow-sm flex justify-between items-center group">
+                <div class="bg-white p-2 rounded border-l-4 ${v.metodo === 'Tarjeta' ? 'border-purple-500' : 'border-green-500'} shadow-sm flex justify-between items-center">
                     <div class="flex-1 pr-1 truncate">
-                        <p class="font-bold text-slate-800 truncate">${v.name}</p>
-                        <p class="text-[9px] text-slate-400">${v.fechaCorta} - ${v.metodo}</p>
+                        <p class="font-bold text-slate-800 truncate text-[10px]">${v.name}</p>
+                        <p class="text-[8px] text-slate-400 uppercase">${v.fechaCorta} - ${v.metodo}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <p class="font-bold text-green-600 whitespace-nowrap">${formatMoney(v.price)}</p>
-                        <button onclick="removeHistoryItem(${v.id})" class="text-slate-300 hover:text-red-500 transition-colors p-1">
-                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+                        <p class="font-bold ${v.metodo === 'Tarjeta' ? 'text-purple-600' : 'text-green-600'}">${formatMoney(v.price)}</p>
+                        <button onclick="removeHistoryItem(${v.id})" class="text-slate-200 hover:text-red-500">✕</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // --- EVENTOS ---
+        function removeHistoryItem(id) {
+            if(confirm("¿Eliminar registro?")) {
+                history = history.filter(h => h.id !== id);
+                localStorage.setItem('pos_history', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        // --- BOTONES CONFIG ---
         document.getElementById('btnManualAdd').onclick = () => {
             const price = parseFloat(document.getElementById('inputManualPrice').value);
             const name = document.getElementById('inputManualName').value || "Venta Rápida";
@@ -280,12 +319,12 @@
 
         document.getElementById('toggleEdit').onclick = () => {
             isEditMode = !isEditMode;
-            document.getElementById('toggleEdit').innerText = isEditMode ? "Salir de Config." : "Configurar Botones";
+            document.getElementById('toggleEdit').innerText = isEditMode ? "Salir" : "Configurar Botones";
             renderProducts();
         };
 
         document.getElementById('btnAddProduct').onclick = () => {
-            const newP = { id: Date.now(), name: "Nuevo Producto", price: 0 };
+            const newP = { id: Date.now(), name: "Nuevo Botón", price: 0 };
             products.push(newP);
             localStorage.setItem('pos_products', JSON.stringify(products));
             renderProducts();
@@ -317,52 +356,32 @@
         };
 
         document.getElementById('closeModal').onclick = () => configModal.classList.add('hidden');
-        document.getElementById('btnLimpiar').onclick = () => { cart = []; updateUI(); };
+        document.getElementById('btnLimpiar').onclick = () => { 
+            if(payments.length > 0 && !confirm("Hay un pago parcial iniciado. ¿Seguro que quieres cancelar la venta?")) return;
+            cart = []; payments = []; updateUI(); 
+        };
         inputPago.oninput = updateUI;
 
         document.getElementById('btnClearHistory').onclick = () => {
-            if(confirm("¿Seguro que deseas borrar TODO el historial?")) {
+            if(confirm("¿Borrar todo el historial?")) {
                 history = [];
                 localStorage.setItem('pos_history', JSON.stringify([]));
                 renderHistory();
             }
         };
 
-        // Exportar PDF desglosado con TOTAL al final
         document.getElementById('btnExportPDF').onclick = () => {
             if (history.length === 0) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            doc.setFontSize(18);
-            doc.text("Reporte Detallado de Ventas", 14, 15);
-            doc.setFontSize(10);
-            doc.text("Generado el: " + new Date().toLocaleString(), 14, 22);
-
+            doc.text("Reporte de Ventas", 14, 15);
             const totalVentas = history.reduce((s, h) => s + h.price, 0);
             const rows = history.map(v => [v.fechaFull, v.name, v.metodo, formatMoney(v.price)]);
-            
-            // Agregar fila de total al final de la tabla
-            rows.push(['', '', 'TOTAL VENTAS:', formatMoney(totalVentas)]);
-
-            doc.autoTable({ 
-                head: [['Fecha/Hora', 'Producto', 'Método', 'Precio']], 
-                body: rows, 
-                startY: 28,
-                theme: 'striped',
-                headStyles: { fillColor: [37, 99, 235] },
-                didParseCell: function (data) {
-                    if (data.row.index === rows.length - 1) {
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fillColor = [219, 234, 254];
-                    }
-                }
-            });
-
-            doc.save("cuadre_caja_totalizado.pdf");
+            rows.push(['', '', 'TOTAL:', formatMoney(totalVentas)]);
+            doc.autoTable({ head: [['Fecha', 'Detalle', 'Método', 'Precio']], body: rows, startY: 25 });
+            doc.save("reporte.pdf");
         };
 
-        // --- INIT ---
         renderProducts();
         renderHistory();
         updateUI();
