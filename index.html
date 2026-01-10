@@ -285,12 +285,19 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
+            // Título Principal - Sobrio (Negro)
             doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
             doc.text("ALMACÉN SOLOMEDIAS INTIMAS", 14, 20);
+            
             doc.setFontSize(12);
-            doc.text("REPORTE DE VENTAS (CUADRE DE CAJA)", 14, 28);
+            doc.text("REPORTE DE VENTAS - CUADRE DE CAJA", 14, 28);
+            
             doc.setFontSize(10);
-            doc.text(`Fecha de reporte: ${new Date().toLocaleString()}`, 14, 35);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 14, 35);
 
             let totalE = 0, totalT = 0;
             const rows = [];
@@ -301,44 +308,77 @@
                 totalE += pagoE;
                 totalT += pagoT;
                 
+                // Formato de lista con precio individual tal como se pidió
+                const itemsList = v.items.map(i => `${i.name.toUpperCase()}  ${formatMoney(i.price)}`).join('\n');
+                
                 rows.push([
                     v.fechaFull,
-                    v.items.map(i => i.name).join(', '),
+                    itemsList,
                     formatMoney(pagoE),
                     formatMoney(pagoT),
                     formatMoney(v.total)
                 ]);
             });
 
+            // Tabla con diseño Minimalista y Profesional
             doc.autoTable({
-                startY: 45,
-                head: [['Fecha', 'Productos', 'Efectivo', 'Tarjeta', 'Total']],
+                startY: 42,
+                head: [['Fecha / Hora', 'Productos y Precios Unitarios', 'Efectivo', 'Tarjeta', 'Total Venta']],
                 body: rows,
                 theme: 'grid',
-                headStyles: { fillColor: [37, 99, 235] }
+                headStyles: { 
+                    fillColor: [60, 60, 60], // Gris oscuro
+                    fontSize: 11, 
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                styles: { 
+                    fontSize: 11, // Tamaño 11 según requerimiento
+                    cellPadding: 3,
+                    valign: 'top',
+                    textColor: [40, 40, 40]
+                },
+                columnStyles: {
+                    0: { cellWidth: 35, fontSize: 10 },
+                    1: { cellWidth: 'auto' }, // Espacio para la lista detallada
+                    2: { halign: 'right', cellWidth: 28 },
+                    3: { halign: 'right', cellWidth: 28 },
+                    4: { halign: 'right', fontStyle: 'bold', cellWidth: 28 }
+                }
             });
 
-            const finalY = doc.lastAutoTable.finalY + 10;
+            const finalY = doc.lastAutoTable.finalY + 15;
+            
+            // Resumen Final sin colores, solo jerarquía de texto
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text("RESUMEN DE CUADRE FINAL", 14, finalY);
+            doc.setTextColor(0, 0, 0);
+            doc.text("RESUMEN DE CIERRE", 14, finalY);
             
             doc.autoTable({
-                startY: finalY + 5,
+                startY: finalY + 4,
                 body: [
-                    ['TOTAL EFECTIVO RECIBIDO:', formatMoney(totalE)],
-                    ['TOTAL TARJETA RECIBIDO:', formatMoney(totalT)],
+                    ['Total en Efectivo:', formatMoney(totalE)],
+                    ['Total en Tarjeta:', formatMoney(totalT)],
                     ['TOTAL GENERAL DE VENTAS:', formatMoney(totalE + totalT)]
                 ],
                 theme: 'plain',
-                styles: { fontSize: 11, cellPadding: 2 },
+                styles: { 
+                    fontSize: 11, 
+                    cellPadding: 2
+                },
                 columnStyles: { 
                     0: { fontStyle: 'bold', cellWidth: 100 },
                     1: { fontStyle: 'bold', halign: 'right' }
                 }
             });
 
-            doc.save(`cuadre_caja_${new Date().toISOString().split('T')[0]}.pdf`);
+            // Pie de página minimalista
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'italic');
+            doc.text("Documento contable interno para propósitos de cuadre.", 14, doc.internal.pageSize.height - 10);
+
+            doc.save(`cuadre_profesional_${new Date().toISOString().split('T')[0]}.pdf`);
         };
 
         function removeHistoryItem(id) {
