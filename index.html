@@ -8,36 +8,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Courier+Prime&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
         body { font-family: 'Inter', sans-serif; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        @media print {
-            body * { visibility: hidden !important; }
-            #ticketPrintArea, #ticketPrintArea * { 
-                visibility: visible !important; 
-                display: block !important;
-            }
-            #ticketPrintArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 57mm;
-                font-family: 'Courier Prime', monospace;
-                font-size: 10px;
-                color: black;
-                padding: 0;
-                margin: 0;
-            }
-            @page { size: 57mm auto; margin: 0; }
-        }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
-
-    <div id="ticketPrintArea" style="display: none;"></div>
 
     <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-20">
         <div class="flex items-center gap-4">
@@ -100,10 +78,7 @@
                 </div>
                 <div class="mt-4 flex flex-col items-center gap-2">
                     <div class="flex items-center gap-4">
-                        <button id="btnLimpiar" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-red-200">❌ Cancelar</button>
-                        <label class="flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer">
-                            <input type="checkbox" id="autoPrint" checked class="w-4 h-4 rounded text-blue-600"> Imprimir Recibo
-                        </label>
+                        <button id="btnLimpiar" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-red-200">❌ Cancelar Venta</button>
                     </div>
                     <span id="paymentStatus" class="text-[10px] font-bold text-orange-500 uppercase italic hidden">Pago parcial iniciado...</span>
                 </div>
@@ -249,7 +224,9 @@
             };
             history = [sale, ...history];
             localStorage.setItem('pos_history', JSON.stringify(history));
-            if(document.getElementById('autoPrint').checked) printTicket(sale);
+            
+            // Lógica de impresión eliminada
+            
             cart = []; payments = [];
             document.getElementById('inputPago').value = '';
             document.getElementById('manualDateTime').value = '';
@@ -261,7 +238,6 @@
             const btnRestore = document.getElementById('btnRestoreHistory');
             const backup = localStorage.getItem('pos_history_backup');
 
-            // Actualizar visibilidad del botón recuperar
             if (backup && backup !== "[]") {
                 btnRestore.classList.remove('hidden');
             } else {
@@ -285,7 +261,6 @@
                     <div class="flex justify-between items-center pb-1 border-b mb-2">
                         <span class="font-bold text-slate-400 text-[8px] uppercase">${v.fechaCorta}</span>
                         <div class="flex gap-2">
-                            <button onclick='reprintTicket(${JSON.stringify(v)})' class="text-blue-400">🖨️</button>
                             <button onclick="removeHistoryItem(${v.id})" class="text-red-300">✕</button>
                         </div>
                     </div>
@@ -302,25 +277,6 @@
             document.getElementById('historyTotalSum').innerText = formatMoney(totalE + totalT);
         }
 
-        function printTicket(saleData) {
-            const ticketArea = document.getElementById('ticketPrintArea');
-            ticketArea.innerHTML = `
-                <div style="text-align: center;">
-                    <strong>ALMACEN SOLOMEDIAS INTIMAS</strong><br>
-                    <span style="font-size: 8px;">TICKET: #${saleData.id.toString().slice(-6)}</span>
-                </div>
-                <div style="margin: 4px 0;">
-                    ${saleData.items.map(it => `<div style="display:flex; justify-content:space-between;"><span>${it.name}</span><span>${formatMoney(it.price)}</span></div>`).join('')}
-                </div>
-                <div style="border-top: 1px solid black; font-weight: bold; display:flex; justify-content:space-between;">
-                    <span>TOTAL:</span><span>${formatMoney(saleData.total)}</span>
-                </div>
-                <div style="height: 30px;">.</div>
-            `;
-            ticketArea.style.display = 'block';
-            setTimeout(() => { window.print(); ticketArea.style.display = 'none'; }, 150);
-        }
-
         function removeHistoryItem(id) {
             if(confirm("¿Eliminar registro?")) {
                 localStorage.setItem('pos_history_backup', JSON.stringify(history));
@@ -330,9 +286,6 @@
             }
         }
 
-        // --- ACCIONES DE LOS BOTONES DE HISTORIAL ---
-        
-        // BOTÓN BORRAR TODO
         document.getElementById('btnClearHistory').onclick = () => {
             if(confirm("¿Borrar historial actual? Podrás recuperarlo con el botón naranja.")) {
                 localStorage.setItem('pos_history_backup', JSON.stringify(history));
@@ -342,7 +295,6 @@
             }
         };
 
-        // BOTÓN RECUPERAR
         document.getElementById('btnRestoreHistory').onclick = () => {
             const backup = localStorage.getItem('pos_history_backup');
             if (backup) {
@@ -353,7 +305,6 @@
             }
         };
 
-        // --- OTROS EVENTOS ---
         document.getElementById('btnManualAdd').onclick = () => {
             const p = parseFloat(document.getElementById('inputManualPrice').value);
             const n = document.getElementById('inputManualName').value || "Venta Rápida";
