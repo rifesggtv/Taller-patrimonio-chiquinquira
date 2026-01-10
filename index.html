@@ -14,14 +14,12 @@
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* CONFIGURACIÓN ESPECÍFICA PARA PAPEL TÉRMICO 57mm */
         @media print {
             body * { visibility: hidden !important; }
             #ticketPrintArea, #ticketPrintArea * { 
                 visibility: visible !important; 
                 display: block !important;
             }
-            
             #ticketPrintArea {
                 position: absolute;
                 left: 0;
@@ -33,22 +31,14 @@
                 padding: 0;
                 margin: 0;
             }
-
-            @page { 
-                size: 57mm auto; 
-                margin: 0; 
-            }
-
-            .no-print { display: none !important; }
+            @page { size: 57mm auto; margin: 0; }
         }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
 
-    <!-- Área de Impresión del Recibo -->
     <div id="ticketPrintArea" style="display: none;"></div>
 
-    <!-- Encabezado -->
     <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-20">
         <div class="flex items-center gap-4">
             <h1 class="text-xl font-bold flex items-center gap-2">
@@ -60,17 +50,12 @@
             <span id="productCounter" class="bg-blue-800 px-3 py-1 rounded-full text-xs font-medium"></span>
         </div>
         <div class="flex gap-2">
-            <button id="btnAddProduct" class="bg-green-500 hover:bg-green-400 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 shadow-sm">
-                + Añadir Botón
-            </button>
-            <button id="toggleEdit" class="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
-                Configurar Botones
-            </button>
+            <button id="btnAddProduct" class="bg-green-500 hover:bg-green-400 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 shadow-sm">+ Añadir Botón</button>
+            <button id="toggleEdit" class="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">Configurar Botones</button>
         </div>
     </header>
 
     <main class="flex-1 flex overflow-hidden">
-        <!-- Panel Izquierdo: Venta -->
         <div class="flex-1 flex flex-col relative overflow-hidden">
             <div class="bg-white p-4 shadow-sm border-b border-slate-200 z-10 space-y-3">
                 <div class="relative">
@@ -81,19 +66,16 @@
                 </div>
                 
                 <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase ml-2">Rápido:</span>
                     <input type="text" id="inputManualName" placeholder="Nombre" class="flex-1 p-2 text-sm border border-slate-300 rounded-lg outline-none">
                     <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-32 p-2 text-sm border border-slate-300 rounded-lg outline-none font-bold">
                     <button id="btnManualAdd" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm">Añadir</button>
                 </div>
             </div>
 
-            <!-- Grilla de Productos -->
             <div class="flex-1 p-6 overflow-y-auto custom-scroll">
                 <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
             </div>
 
-            <!-- Panel de Pago Inferior -->
             <div class="bg-white p-4 border-t-2 border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end max-w-6xl mx-auto">
                     <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
@@ -118,12 +100,9 @@
                 </div>
                 <div class="mt-4 flex flex-col items-center gap-2">
                     <div class="flex items-center gap-4">
-                        <button id="btnLimpiar" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-red-200">
-                            ❌ Cancelar
-                        </button>
+                        <button id="btnLimpiar" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-red-200">❌ Cancelar</button>
                         <label class="flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer">
-                            <input type="checkbox" id="autoPrint" checked class="w-4 h-4 rounded text-blue-600">
-                            Imprimir Recibo
+                            <input type="checkbox" id="autoPrint" checked class="w-4 h-4 rounded text-blue-600"> Imprimir Recibo
                         </label>
                     </div>
                     <span id="paymentStatus" class="text-[10px] font-bold text-orange-500 uppercase italic hidden">Pago parcial iniciado...</span>
@@ -131,7 +110,6 @@
             </div>
         </div>
 
-        <!-- Barra Lateral -->
         <aside class="w-80 bg-white border-l border-slate-200 flex flex-col z-30">
             <div class="p-4 border-b border-slate-100 h-1/3 flex flex-col overflow-hidden">
                 <h2 class="font-bold text-slate-700 mb-2 flex items-center gap-2">🛒 Carrito</h2>
@@ -142,12 +120,15 @@
                 <div class="flex justify-between items-center mb-1">
                     <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial</h2>
                     <div class="flex gap-2 items-center">
-                        <!-- Botón Recuperar Historial -->
                         <button id="btnRestoreHistory" class="text-orange-500 hover:text-orange-700 hidden" title="Recuperar historial borrado">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </button>
-                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700" title="Exportar PDF"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></button>
-                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Limpiar todo"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700" title="Exportar PDF">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </button>
+                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar todo el historial">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -171,7 +152,6 @@
         </aside>
     </main>
 
-    <!-- Modal Editar Botón -->
     <div id="configModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-80">
             <h3 class="text-xl font-bold mb-4">Editar Producto</h3>
@@ -189,77 +169,14 @@
 
     <script>
         let products = JSON.parse(localStorage.getItem('pos_products')) || [{ id: 1, name: "Medias Básicas", price: 5000 }];
-        let rawHistory = JSON.parse(localStorage.getItem('pos_history')) || [];
-        let history = rawHistory.filter(h => h && h.total !== undefined);
+        let history = JSON.parse(localStorage.getItem('pos_history')) || [];
         let cart = [];
         let payments = []; 
         let isEditMode = false;
         let editingId = null;
 
-        const formatMoney = (v) => {
-            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v || 0);
-        };
+        const formatMoney = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v || 0);
 
-        // --- IMPRESIÓN DEL RECIBO ---
-        function printTicket(saleData) {
-            const ticketArea = document.getElementById('ticketPrintArea');
-            const separator = "-".repeat(28);
-            
-            const itemsHTML = saleData.items.map(it => `
-                <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
-                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${it.name}</span>
-                    <span style="margin-left:4px; font-weight:bold;">${formatMoney(it.price)}</span>
-                </div>
-            `).join('');
-
-            const pagosHTML = Object.entries(saleData.pagos).map(([metodo, monto]) => `
-                <div style="display:flex; justify-content:space-between;">
-                    <span>${metodo}:</span>
-                    <span>${formatMoney(monto)}</span>
-                </div>
-            `).join('');
-
-            ticketArea.innerHTML = `
-                <div style="text-align: center; margin-bottom: 4px;">
-                    <strong style="font-size: 11px;">ALMACEN SOLOMEDIAS INTIMAS</strong><br>
-                    <span style="font-size: 9px;">ELIZABETH SIERRA MONTAÑEZ</span><br>
-                    <span style="font-size: 9px;">NIT 46370855</span><br>
-                    <span style="font-size: 9px;">CLL 12#11-53 LC-102/SOG</span><br>
-                    <div style="margin-top:3px; font-weight:bold; border-top:1px dashed black; border-bottom:1px dashed black; padding: 2px 0;">RECIBO DE VENTA</div>
-                    <span style="font-size: 8px;">FECHA: ${saleData.fechaFull}</span><br>
-                    <span style="font-size: 8px;">TICKET: #${saleData.id.toString().slice(-6)}</span>
-                </div>
-                <div style="margin: 4px 0;">
-                    ${itemsHTML}
-                </div>
-                <div style="border-top: 1px solid black; margin-top:2px; padding-top:2px;">
-                    <div style="display:flex; justify-content:space-between; font-weight: bold; font-size: 12px;">
-                        <span>TOTAL:</span>
-                        <span>${formatMoney(saleData.total)}</span>
-                    </div>
-                </div>
-                <div style="margin-top: 4px; border-top: 0.5px solid #ccc; padding-top: 2px;">
-                    <div style="font-size: 8px; font-weight:bold; text-decoration:underline;">FORMA DE PAGO:</div>
-                    ${pagosHTML}
-                </div>
-                <div style="text-align: center; margin-top: 8px; font-size: 8px; line-height: 1.1;">
-                    ${separator}<br>
-                    <strong>GRACIAS POR SU COMPRA</strong><br>
-                    <div style="margin: 4px 0;">ROPA INTERIOR, BODYS Y MEDIAS<br>NO TIENEN CAMBIO</div>
-                    <strong>REGIMEN SIMPLIFICADO</strong><br>
-                    ${separator}
-                </div>
-                <div style="height: 40px;">.</div>
-            `;
-
-            ticketArea.style.display = 'block';
-            setTimeout(() => {
-                window.print();
-                ticketArea.style.display = 'none';
-            }, 150);
-        }
-
-        // --- LÓGICA DE FUNCIONAMIENTO ---
         function renderProducts(filter = "") {
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '';
@@ -298,11 +215,9 @@
             const cartTotal = cart.reduce((s, i) => s + i.price, 0);
             const totalPagado = payments.reduce((s, p) => s + p.amount, 0);
             const pendiente = Math.max(0, cartTotal - totalPagado);
-            
             document.getElementById('displayTotal').innerText = formatMoney(pendiente);
             const abono = parseFloat(document.getElementById('inputPago').value) || 0;
             document.getElementById('displayCambio').innerText = formatMoney(Math.max(0, abono - pendiente));
-
             const status = document.getElementById('paymentStatus');
             payments.length > 0 ? status.classList.remove('hidden') : status.classList.add('hidden');
         }
@@ -312,29 +227,18 @@
             const cartTotal = cart.reduce((s, i) => s + i.price, 0);
             const totalPagado = payments.reduce((s, p) => s + p.amount, 0);
             const pendiente = cartTotal - totalPagado;
-            
             let montoInput = parseFloat(document.getElementById('inputPago').value) || 0;
             if (montoInput === 0) montoInput = pendiente;
-            
-            const realAbono = Math.min(montoInput, pendiente);
-            payments.push({ amount: realAbono, method: method });
-
-            if (payments.reduce((s, p) => s + p.amount, 0) >= cartTotal - 1) {
-                finalizeSale();
-            } else {
-                document.getElementById('inputPago').value = '';
-                updateUI();
-            }
+            payments.push({ amount: Math.min(montoInput, pendiente), method: method });
+            if (payments.reduce((s, p) => s + p.amount, 0) >= cartTotal - 1) { finalizeSale(); } else { document.getElementById('inputPago').value = ''; updateUI(); }
         }
 
         function finalizeSale() {
             const dateInput = document.getElementById('manualDateTime').value;
             const fechaObj = dateInput ? new Date(dateInput) : new Date();
             const total = cart.reduce((s, i) => s + i.price, 0);
-            
             const resumenPagos = {};
             payments.forEach(p => resumenPagos[p.method] = (resumenPagos[p.method] || 0) + p.amount);
-
             const sale = {
                 id: Date.now(),
                 items: cart.map(i => ({name: i.name, price: i.price})),
@@ -343,12 +247,9 @@
                 fechaFull: fechaObj.toLocaleString(),
                 fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
-
             history = [sale, ...history];
             localStorage.setItem('pos_history', JSON.stringify(history));
-            
             if(document.getElementById('autoPrint').checked) printTicket(sale);
-
             cart = []; payments = [];
             document.getElementById('inputPago').value = '';
             document.getElementById('manualDateTime').value = '';
@@ -358,16 +259,16 @@
         function renderHistory() {
             const container = document.getElementById('salesHistory');
             const btnRestore = document.getElementById('btnRestoreHistory');
-            let totalE = 0, totalT = 0;
-
-            // Mostrar/Ocultar botón de restauración si existe backup
             const backup = localStorage.getItem('pos_history_backup');
+
+            // Actualizar visibilidad del botón recuperar
             if (backup && backup !== "[]") {
                 btnRestore.classList.remove('hidden');
             } else {
                 btnRestore.classList.add('hidden');
             }
 
+            let totalE = 0, totalT = 0;
             if (!history.length) {
                 container.innerHTML = '<p class="text-center text-slate-400 mt-2">Sin registros</p>';
                 document.getElementById('totalEfectivoSum').innerText = formatMoney(0);
@@ -379,7 +280,6 @@
             container.innerHTML = history.map(v => {
                 totalE += (v.pagos['Efectivo'] || 0);
                 totalT += (v.pagos['Tarjeta'] || 0);
-                
                 return `
                 <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
                     <div class="flex justify-between items-center pb-1 border-b mb-2">
@@ -402,11 +302,27 @@
             document.getElementById('historyTotalSum').innerText = formatMoney(totalE + totalT);
         }
 
-        function reprintTicket(sale) { printTicket(sale); }
+        function printTicket(saleData) {
+            const ticketArea = document.getElementById('ticketPrintArea');
+            ticketArea.innerHTML = `
+                <div style="text-align: center;">
+                    <strong>ALMACEN SOLOMEDIAS INTIMAS</strong><br>
+                    <span style="font-size: 8px;">TICKET: #${saleData.id.toString().slice(-6)}</span>
+                </div>
+                <div style="margin: 4px 0;">
+                    ${saleData.items.map(it => `<div style="display:flex; justify-content:space-between;"><span>${it.name}</span><span>${formatMoney(it.price)}</span></div>`).join('')}
+                </div>
+                <div style="border-top: 1px solid black; font-weight: bold; display:flex; justify-content:space-between;">
+                    <span>TOTAL:</span><span>${formatMoney(saleData.total)}</span>
+                </div>
+                <div style="height: 30px;">.</div>
+            `;
+            ticketArea.style.display = 'block';
+            setTimeout(() => { window.print(); ticketArea.style.display = 'none'; }, 150);
+        }
 
         function removeHistoryItem(id) {
             if(confirm("¿Eliminar registro?")) {
-                // Hacemos un backup antes de borrar un solo item también por seguridad
                 localStorage.setItem('pos_history_backup', JSON.stringify(history));
                 history = history.filter(h => h.id !== id);
                 localStorage.setItem('pos_history', JSON.stringify(history));
@@ -414,71 +330,46 @@
             }
         }
 
-        document.getElementById('btnExportPDF').onclick = () => {
-            if (!history.length) return;
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let tE = 0, tT = 0;
-            history.forEach(h => {
-                tE += (h.pagos['Efectivo'] || 0);
-                tT += (h.pagos['Tarjeta'] || 0);
-            });
-            doc.setFontSize(18);
-            doc.text("ALMACÉN SOLOMEDIAS INTIMAS", 14, 20);
-            doc.setFontSize(12);
-            doc.text(`Reporte de Caja - ${new Date().toLocaleDateString()}`, 14, 28);
-            const rows = history.map(v => [v.fechaFull, v.items.map(i => i.name).join(', '), Object.keys(v.pagos).join('/'), formatMoney(v.total)]);
-            doc.autoTable({ head: [['Fecha', 'Productos', 'Método', 'Total']], body: rows, startY: 35, theme: 'grid' });
-            const finalY = doc.lastAutoTable.finalY + 10;
-            doc.setFont("helvetica", "bold");
-            doc.text(`Total Efectivo: ${formatMoney(tE)}`, 14, finalY);
-            doc.text(`Total Tarjeta: ${formatMoney(tT)}`, 14, finalY + 7);
-            doc.setFontSize(14);
-            doc.text(`TOTAL GENERAL: ${formatMoney(tE + tT)}`, 14, finalY + 16);
-            doc.save(`Reporte_Ventas_${new Date().toISOString().split('T')[0]}.pdf`);
+        // --- ACCIONES DE LOS BOTONES DE HISTORIAL ---
+        
+        // BOTÓN BORRAR TODO
+        document.getElementById('btnClearHistory').onclick = () => {
+            if(confirm("¿Borrar historial actual? Podrás recuperarlo con el botón naranja.")) {
+                localStorage.setItem('pos_history_backup', JSON.stringify(history));
+                history = [];
+                localStorage.setItem('pos_history', "[]");
+                renderHistory();
+            }
         };
 
+        // BOTÓN RECUPERAR
+        document.getElementById('btnRestoreHistory').onclick = () => {
+            const backup = localStorage.getItem('pos_history_backup');
+            if (backup) {
+                history = JSON.parse(backup);
+                localStorage.setItem('pos_history', backup);
+                localStorage.removeItem('pos_history_backup');
+                renderHistory();
+            }
+        };
+
+        // --- OTROS EVENTOS ---
         document.getElementById('btnManualAdd').onclick = () => {
             const p = parseFloat(document.getElementById('inputManualPrice').value);
             const n = document.getElementById('inputManualName').value || "Venta Rápida";
             if (p > 0) { addToCart({ name: n, price: p }); document.getElementById('inputManualPrice').value = ''; document.getElementById('inputManualName').value = ''; }
         };
-
         document.getElementById('toggleEdit').onclick = () => { isEditMode = !isEditMode; document.getElementById('toggleEdit').innerText = isEditMode ? "Listo" : "Configurar Botones"; renderProducts(); };
-        document.getElementById('btnAddProduct').onclick = () => { const n = { id: Date.now(), name: "Nuevo Producto", price: 0 }; products.push(n); localStorage.setItem('pos_products', JSON.stringify(products)); renderProducts(); openConfig(n.id); };
+        document.getElementById('btnAddProduct').onclick = () => { const n = { id: Date.now(), name: "Nuevo Producto", price: 0 }; products.push(n); renderProducts(); openConfig(n.id); };
         function openConfig(id) { editingId = id; const p = products.find(x => x.id === id); document.getElementById('editName').value = p.name; document.getElementById('editPrice').value = p.price; document.getElementById('configModal').classList.remove('hidden'); }
         document.getElementById('saveConfig').onclick = () => { products = products.map(p => p.id === editingId ? {...p, name: document.getElementById('editName').value, price: parseFloat(document.getElementById('editPrice').value) || 0} : p); localStorage.setItem('pos_products', JSON.stringify(products)); document.getElementById('configModal').classList.add('hidden'); renderProducts(); };
         document.getElementById('deleteProduct').onclick = () => { products = products.filter(p => p.id !== editingId); localStorage.setItem('pos_products', JSON.stringify(products)); document.getElementById('configModal').classList.add('hidden'); renderProducts(); };
         document.getElementById('closeModal').onclick = () => document.getElementById('configModal').classList.add('hidden');
-        document.getElementById('searchBox').addEventListener('input', (e) => renderProducts(e.target.value));
+        document.getElementById('searchBox').oninput = (e) => renderProducts(e.target.value);
         document.getElementById('inputPago').oninput = updateUI;
         document.getElementById('btnLimpiar').onclick = () => { cart = []; payments = []; updateUI(); };
-        
-        // BOTÓN BORRAR HISTORIAL CON BACKUP
-        document.getElementById('btnClearHistory').onclick = () => { 
-            if(confirm("¿Borrar historial actual? (Podrás recuperarlo si te equivocas)")) { 
-                // Guardar copia antes de borrar
-                localStorage.setItem('pos_history_backup', JSON.stringify(history));
-                history = []; 
-                localStorage.setItem('pos_history', "[]"); 
-                renderHistory(); 
-            } 
-        };
 
-        // BOTÓN RECUPERAR HISTORIAL
-        document.getElementById('btnRestoreHistory').onclick = () => {
-            const backup = localStorage.getItem('pos_history_backup');
-            if (backup && confirm("¿Deseas recuperar el historial borrado anteriormente?")) {
-                history = JSON.parse(backup);
-                localStorage.setItem('pos_history', backup);
-                localStorage.removeItem('pos_history_backup'); // Limpiar backup una vez restaurado
-                renderHistory();
-            }
-        };
-
-        renderProducts();
-        renderHistory();
-        updateUI();
+        renderProducts(); renderHistory(); updateUI();
     </script>
 </body>
 </html>
