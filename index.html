@@ -14,26 +14,36 @@
 
         /* Estilos específicos para la impresión del recibo */
         @media print {
-            body * { visibility: hidden; }
-            #receipt-print-area, #receipt-print-area * { visibility: visible; }
+            /* Ocultar todo el sitio excepto el área de recibo */
+            body > *:not(#receipt-print-area) {
+                display: none !important;
+            }
+            
             #receipt-print-area {
+                display: block !important;
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 57mm; /* Ancho estándar de papel térmico */
-                padding: 2mm;
-                color: black;
-                background: white;
+                width: 57mm; 
+                margin: 0;
+                padding: 5px;
+                background-color: white !important;
+                color: black !important;
             }
-            @page { size: auto; margin: 0; }
+
+            @page {
+                size: 57mm auto;
+                margin: 0;
+            }
         }
 
+        /* Oculto en pantalla normal */
         #receipt-print-area { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
 
-    <!-- Área oculta para impresión -->
+    <!-- Área crítica para impresión -->
     <div id="receipt-print-area"></div>
 
     <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-20">
@@ -62,7 +72,7 @@
                     <input type="text" id="searchBox" placeholder="Buscar producto..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
                 </div>
                 
-                <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg">
+                <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg text-black">
                     <input type="text" id="inputManualName" placeholder="Nombre" class="flex-1 p-2 text-sm border border-slate-300 rounded-lg outline-none">
                     <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-24 p-2 text-sm border border-slate-300 rounded-lg outline-none font-bold">
                     <div class="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2">
@@ -79,20 +89,20 @@
 
             <div class="bg-white p-4 border-t-2 border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end max-w-6xl mx-auto">
-                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-black">
                         <p class="text-[10px] font-bold text-blue-400 uppercase mb-1">Total Pendiente</p>
                         <p class="text-3xl font-black text-blue-600" id="displayTotal">$0</p>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Monto a recibir:</label>
-                        <input type="number" id="inputPago" placeholder="0" class="w-full p-2 border border-slate-300 rounded-lg text-2xl font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-yellow-50">
+                        <input type="number" id="inputPago" placeholder="0" class="w-full p-2 border border-slate-300 rounded-lg text-2xl font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-yellow-50 text-black">
                     </div>
-                    <div>
+                    <div class="text-black">
                         <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Cambio:</p>
                         <p class="text-3xl font-black text-green-600" id="displayCambio">$0</p>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-[10px] bg-slate-50">
+                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-[10px] bg-slate-50 text-black">
                         <div class="grid grid-cols-2 gap-2">
                             <button onclick="handlePayment('Efectivo')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl text-xs shadow-md">💵 Efectivo</button>
                             <button onclick="handlePayment('Tarjeta')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-xl text-xs shadow-md">💳 Tarjeta</button>
@@ -109,7 +119,7 @@
         </div>
 
         <aside class="w-80 bg-white border-l border-slate-200 flex flex-col z-30">
-            <div class="p-4 border-b border-slate-100 h-1/3 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-100 h-1/3 flex flex-col overflow-hidden text-black">
                 <h2 class="font-bold text-slate-700 mb-2 flex items-center gap-2">🛒 Carrito</h2>
                 <div id="cartItems" class="flex-1 overflow-y-auto custom-scroll space-y-2"></div>
             </div>
@@ -118,16 +128,16 @@
                 <div class="flex justify-between items-center mb-1">
                     <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial</h2>
                     <div class="flex gap-2 items-center">
-                        <button id="btnRestoreHistory" class="text-orange-500 hover:text-orange-700 hidden" title="Recuperar historial borrado">
+                        <button id="btnRestoreHistory" class="text-orange-500 hover:text-orange-700 hidden" title="Recuperar">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </button>
-                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar todo el historial">
+                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mb-2">
+                <div class="grid grid-cols-2 gap-2 mb-2 text-black">
                     <div class="bg-green-100 p-2 rounded-lg border border-green-200">
                         <p class="text-[8px] font-bold text-green-700 uppercase">Efectivo</p>
                         <p id="totalEfectivoSum" class="font-black text-green-800 text-xs">$0</p>
@@ -142,13 +152,14 @@
                     <span id="historyTotalSum" class="font-black text-white text-sm">$0</span>
                 </div>
 
-                <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-3 text-[10px]"></div>
+                <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-3 text-[10px] text-black"></div>
             </div>
         </aside>
     </main>
 
+    <!-- Modal Configuración -->
     <div id="configModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 text-black">
             <h3 class="text-xl font-bold mb-4">Editar Producto</h3>
             <div class="space-y-4">
                 <input type="text" id="editName" placeholder="Nombre" class="w-full p-2 border rounded-lg">
@@ -201,8 +212,8 @@
                 <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200 text-[11px]">
                     <span class="font-bold truncate">${item.name}</span>
                     <div class="flex items-center gap-2">
-                        <span class="text-blue-500">${formatMoney(item.price)}</span>
-                        <button onclick="removeFromCart(${item.cartId})" class="text-red-400">✕</button>
+                        <span class="text-blue-500 font-bold">${formatMoney(item.price)}</span>
+                        <button onclick="removeFromCart(${item.cartId})" class="text-red-400 font-bold">✕</button>
                     </div>
                 </div>
             `).join('') : '<p class="text-slate-400 text-center text-xs mt-4 italic">Carrito vacío</p>';
@@ -239,7 +250,7 @@
                 items: cart.map(i => ({name: i.name, price: i.price})),
                 total: total,
                 pagos: resumenPagos,
-                fechaFull: fechaObj.toLocaleString(),
+                fechaFull: fechaObj.toLocaleString('es-CO'),
                 fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             history = [sale, ...history];
@@ -249,6 +260,9 @@
             document.getElementById('inputPago').value = '';
             document.getElementById('manualDateTime').value = '';
             updateUI(); renderHistory();
+            
+            // Auto-imprimir al finalizar
+            printDirectReceipt(sale.id);
         }
 
         function renderHistory() {
@@ -256,11 +270,8 @@
             const btnRestore = document.getElementById('btnRestoreHistory');
             const backup = localStorage.getItem('pos_history_backup');
 
-            if (backup && backup !== "[]") {
-                btnRestore.classList.remove('hidden');
-            } else {
-                btnRestore.classList.add('hidden');
-            }
+            if (backup && backup !== "[]") btnRestore.classList.remove('hidden');
+            else btnRestore.classList.add('hidden');
 
             let totalE = 0, totalT = 0;
             if (!history.length) {
@@ -275,14 +286,14 @@
                 totalE += (v.pagos['Efectivo'] || 0);
                 totalT += (v.pagos['Tarjeta'] || 0);
                 return `
-                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-black">
                     <div class="flex justify-between items-center pb-1 border-b mb-2">
                         <span class="font-bold text-slate-400 text-[8px] uppercase">${v.fechaCorta}</span>
                         <div class="flex gap-2">
-                            <button onclick="printDirectReceipt(${v.id})" class="text-blue-500 hover:text-blue-700" title="Imprimir Recibo">
+                            <button onclick="printDirectReceipt(${v.id})" class="text-blue-500" title="Imprimir">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                             </button>
-                            <button onclick="removeHistoryItem(${v.id})" class="text-red-300 hover:text-red-500">✕</button>
+                            <button onclick="removeHistoryItem(${v.id})" class="text-red-300">✕</button>
                         </div>
                     </div>
                     ${v.items.map(it => `<div class="flex justify-between text-[9px] text-slate-500"><span>${it.name}</span><span>${formatMoney(it.price)}</span></div>`).join('')}
@@ -298,58 +309,66 @@
             document.getElementById('historyTotalSum').innerText = formatMoney(totalE + totalT);
         }
 
-        // Nueva función para impresión directa
+        // FUNCIÓN DE IMPRESIÓN REFORMADA
         function printDirectReceipt(id) {
             const sale = history.find(h => h.id === id);
             if (!sale) return;
 
             const printArea = document.getElementById('receipt-print-area');
             
-            // Construcción del diseño tipo ticket 57mm
             let html = `
-                <div style="font-family: 'Courier New', Courier, monospace; text-align: center; font-size: 12px; color: black; line-height: 1.2;">
-                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 5px;">ALMACÉN SOLOMEDIAS INTIMAS</div>
-                    <div style="margin-bottom: 2px;">*** RECIBO DE CAJA ***</div>
-                    <div style="margin-bottom: 10px;">--------------------------</div>
+                <div style="font-family: 'Courier New', Courier, monospace; width: 100%; text-align: center; color: black; background: white; padding: 0; margin: 0; font-size: 11px;">
+                    <div style="font-weight: bold; font-size: 13px; margin-bottom: 2px;">ALMACÉN SOLOMEDIAS INTIMAS</div>
+                    <div style="margin-bottom: 10px;">RECIBO DE VENTA</div>
                     
                     <div style="text-align: left; margin-bottom: 2px;">FECHA: ${sale.fechaFull}</div>
-                    <div style="text-align: left; margin-bottom: 10px;">RECIBO: ${sale.id}</div>
+                    <div style="text-align: left; margin-bottom: 5px;">ID: ${sale.id}</div>
                     
-                    <div style="text-align: left; font-weight: bold;">
-                        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed black; padding-bottom: 2px; margin-bottom: 5px;">
-                            <span>PRODUCTO</span>
-                            <span>VALOR</span>
-                        </div>
-            `;
+                    <div style="border-top: 1px dashed black; margin: 5px 0;"></div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px dashed black;">
+                                <th style="padding: 2px 0;">DESCRIPCIÓN</th>
+                                <th style="text-align: right; padding: 2px 0;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sale.items.map(item => `
+                                <tr>
+                                    <td style="padding: 2px 0; vertical-align: top;">${item.name.toUpperCase()}</td>
+                                    <td style="text-align: right; padding: 2px 0; vertical-align: top;">${formatMoney(item.price)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
 
-            sale.items.forEach(item => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="max-width: 60%;">${item.name.toUpperCase()}</span>
-                        <span>${formatMoney(item.price)}</span>
+                    <div style="border-top: 1px dashed black; margin: 5px 0;"></div>
+
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin: 5px 0;">
+                        <span>TOTAL:</span>
+                        <span>${formatMoney(sale.total)}</span>
                     </div>
-                `;
-            });
 
-            html += `
-                        <div style="margin-top: 10px; border-top: 1px dashed black; padding-top: 5px; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between;">
-                            <span>TOTAL:</span>
-                            <span>${formatMoney(sale.total)}</span>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 10px; text-align: left; font-size: 10px;">
+                    <div style="text-align: left; font-size: 10px; margin-top: 5px;">
                         ${Object.entries(sale.pagos).map(([m, a]) => `PAGO ${m.toUpperCase()}: ${formatMoney(a)}`).join('<br>')}
                     </div>
 
-                    <div style="margin-top: 20px; font-weight: bold;">GRACIAS POR SU COMPRA</div>
-                    <div style="margin-top: 10px; font-size: 9px;">*** Vuelva Pronto ***</div>
-                    <div style="height: 30px;"></div>
+                    <div style="margin-top: 15px; font-weight: bold;">¡GRACIAS POR SU COMPRA!</div>
+                    <div style="margin-top: 5px; font-size: 9px;">*** Vuelva Pronto ***</div>
+                    
+                    <!-- Espacio para el corte de papel -->
+                    <div style="height: 40px;"></div>
                 </div>
             `;
 
+            // Inyectar el contenido
             printArea.innerHTML = html;
-            window.print();
+
+            // Pequeña espera para que el navegador "vea" el contenido antes de imprimir
+            setTimeout(() => {
+                window.print();
+            }, 100);
         }
 
         function removeHistoryItem(id) {
