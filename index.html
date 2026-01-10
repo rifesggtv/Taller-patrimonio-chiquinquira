@@ -45,7 +45,11 @@
                 
                 <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg">
                     <input type="text" id="inputManualName" placeholder="Nombre" class="flex-1 p-2 text-sm border border-slate-300 rounded-lg outline-none">
-                    <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-32 p-2 text-sm border border-slate-300 rounded-lg outline-none font-bold">
+                    <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-24 p-2 text-sm border border-slate-300 rounded-lg outline-none font-bold">
+                    <div class="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Cant:</span>
+                        <input type="number" id="inputManualQty" value="1" min="1" class="w-12 p-1 text-sm outline-none font-bold text-blue-600">
+                    </div>
                     <button id="btnManualAdd" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm">Añadir</button>
                 </div>
             </div>
@@ -275,7 +279,6 @@
             document.getElementById('historyTotalSum').innerText = formatMoney(totalE + totalT);
         }
 
-        // FUNCIÓN DE EXPORTACIÓN A PDF CON DESGLOSE FINAL
         document.getElementById('btnExportPDF').onclick = () => {
             if (history.length === 0) return alert("No hay ventas para exportar.");
 
@@ -307,7 +310,6 @@
                 ]);
             });
 
-            // Tabla de transacciones
             doc.autoTable({
                 startY: 45,
                 head: [['Fecha', 'Productos', 'Efectivo', 'Tarjeta', 'Total']],
@@ -316,7 +318,6 @@
                 headStyles: { fillColor: [37, 99, 235] }
             });
 
-            // Tabla de Cuadre Final (Resumen separado al final)
             const finalY = doc.lastAutoTable.finalY + 10;
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -371,8 +372,18 @@
         document.getElementById('btnManualAdd').onclick = () => {
             const p = parseFloat(document.getElementById('inputManualPrice').value);
             const n = document.getElementById('inputManualName').value || "Venta Rápida";
-            if (p > 0) { addToCart({ name: n, price: p }); document.getElementById('inputManualPrice').value = ''; document.getElementById('inputManualName').value = ''; }
+            const q = parseInt(document.getElementById('inputManualQty').value) || 1;
+            
+            if (p > 0) { 
+                for(let i = 0; i < q; i++) {
+                    addToCart({ name: n, price: p }); 
+                }
+                document.getElementById('inputManualPrice').value = ''; 
+                document.getElementById('inputManualName').value = ''; 
+                document.getElementById('inputManualQty').value = '1';
+            }
         };
+        
         document.getElementById('toggleEdit').onclick = () => { isEditMode = !isEditMode; document.getElementById('toggleEdit').innerText = isEditMode ? "Listo" : "Configurar Botones"; renderProducts(); };
         document.getElementById('btnAddProduct').onclick = () => { const n = { id: Date.now(), name: "Nuevo Producto", price: 0 }; products.push(n); renderProducts(); openConfig(n.id); };
         function openConfig(id) { editingId = id; const p = products.find(x => x.id === id); document.getElementById('editName').value = p.name; document.getElementById('editPrice').value = p.price; document.getElementById('configModal').classList.remove('hidden'); }
