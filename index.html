@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caja Registradora - Almacén Solomedias Intimas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librerías para exportación PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -14,34 +13,9 @@
         body { font-family: 'Inter', sans-serif; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-        @media print {
-            body > *:not(#receipt-print-area) {
-                display: none !important;
-            }
-            #receipt-print-area {
-                display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 57mm; 
-                margin: 0;
-                padding: 5px;
-                background-color: white !important;
-                color: black !important;
-            }
-            @page {
-                size: 57mm auto;
-                margin: 0;
-            }
-        }
-        #receipt-print-area { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
-
-    <!-- Área de impresión (No borrar) -->
-    <div id="receipt-print-area"></div>
 
     <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-20">
         <div class="flex items-center gap-4">
@@ -51,10 +25,10 @@
                 </svg>
                 Caja Registradora
             </h1>
-            <span id="productCounter" class="bg-blue-800 px-3 py-1 rounded-full text-xs font-medium text-white"></span>
+            <span id="productCounter" class="bg-blue-800 px-3 py-1 rounded-full text-xs font-medium"></span>
         </div>
-        <div class="flex gap-2 text-white">
-            <button id="btnAddProduct" class="bg-green-500 hover:bg-green-400 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">+ Añadir Botón</button>
+        <div class="flex gap-2">
+            <button id="btnAddProduct" class="bg-green-500 hover:bg-green-400 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 shadow-sm">+ Añadir Botón</button>
             <button id="toggleEdit" class="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">Configurar Botones</button>
         </div>
     </header>
@@ -66,10 +40,10 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </span>
-                    <input type="text" id="searchBox" placeholder="Buscar producto..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 text-black">
+                    <input type="text" id="searchBox" placeholder="Buscar producto..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
                 </div>
                 
-                <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg text-black">
+                <div class="flex gap-3 items-center bg-slate-100 p-2 rounded-lg">
                     <input type="text" id="inputManualName" placeholder="Nombre" class="flex-1 p-2 text-sm border border-slate-300 rounded-lg outline-none">
                     <input type="number" id="inputManualPrice" placeholder="Precio ($)" class="w-24 p-2 text-sm border border-slate-300 rounded-lg outline-none font-bold">
                     <div class="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2">
@@ -86,20 +60,20 @@
 
             <div class="bg-white p-4 border-t-2 border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end max-w-6xl mx-auto">
-                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-black">
+                    <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
                         <p class="text-[10px] font-bold text-blue-400 uppercase mb-1">Total Pendiente</p>
                         <p class="text-3xl font-black text-blue-600" id="displayTotal">$0</p>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Monto a recibir:</label>
-                        <input type="number" id="inputPago" placeholder="0" class="w-full p-2 border border-slate-300 rounded-lg text-2xl font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-yellow-50 text-black">
+                        <input type="number" id="inputPago" placeholder="0" class="w-full p-2 border border-slate-300 rounded-lg text-2xl font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-yellow-50">
                     </div>
-                    <div class="text-black">
+                    <div>
                         <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Cambio:</p>
                         <p class="text-3xl font-black text-green-600" id="displayCambio">$0</p>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-[10px] bg-slate-50 text-black">
+                        <input type="datetime-local" id="manualDateTime" class="w-full p-2 border border-slate-200 rounded text-[10px] bg-slate-50">
                         <div class="grid grid-cols-2 gap-2">
                             <button onclick="handlePayment('Efectivo')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl text-xs shadow-md">💵 Efectivo</button>
                             <button onclick="handlePayment('Tarjeta')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-xl text-xs shadow-md">💳 Tarjeta</button>
@@ -107,15 +81,17 @@
                     </div>
                 </div>
                 <div class="mt-4 flex flex-col items-center gap-2">
-                    <button id="btnLimpiar" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-red-200">❌ Cancelar Venta</button>
+                    <div class="flex items-center gap-4">
+                        <button id="btnLimpiar" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-red-200">❌ Cancelar Venta</button>
+                    </div>
                     <span id="paymentStatus" class="text-[10px] font-bold text-orange-500 uppercase italic hidden">Pago parcial iniciado...</span>
                 </div>
             </div>
         </div>
 
         <aside class="w-80 bg-white border-l border-slate-200 flex flex-col z-30">
-            <div class="p-4 border-b border-slate-100 h-1/3 flex flex-col overflow-hidden text-black">
-                <h2 class="font-bold text-slate-700 mb-2 flex items-center gap-2 italic">🛒 Carrito</h2>
+            <div class="p-4 border-b border-slate-100 h-1/3 flex flex-col overflow-hidden">
+                <h2 class="font-bold text-slate-700 mb-2 flex items-center gap-2">🛒 Carrito</h2>
                 <div id="cartItems" class="flex-1 overflow-y-auto custom-scroll space-y-2"></div>
             </div>
 
@@ -123,19 +99,19 @@
                 <div class="flex justify-between items-center mb-1">
                     <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial</h2>
                     <div class="flex gap-2 items-center">
-                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700 transition" title="Exportar historial a PDF">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        </button>
-                        <button id="btnRestoreHistory" class="text-orange-500 hover:text-orange-700 hidden" title="Recuperar">
+                        <button id="btnRestoreHistory" class="text-orange-500 hover:text-orange-700 hidden" title="Recuperar historial borrado">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </button>
-                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar">
+                        <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700" title="Exportar Reporte General">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </button>
+                        <button id="btnClearHistory" class="text-red-400 hover:text-red-600" title="Borrar todo el historial">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mb-2 text-black">
+                <div class="grid grid-cols-2 gap-2 mb-2">
                     <div class="bg-green-100 p-2 rounded-lg border border-green-200">
                         <p class="text-[8px] font-bold text-green-700 uppercase">Efectivo</p>
                         <p id="totalEfectivoSum" class="font-black text-green-800 text-xs">$0</p>
@@ -150,14 +126,13 @@
                     <span id="historyTotalSum" class="font-black text-white text-sm">$0</span>
                 </div>
 
-                <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-3 text-[10px] text-black"></div>
+                <div id="salesHistory" class="flex-1 overflow-y-auto custom-scroll space-y-3 text-[10px]"></div>
             </div>
         </aside>
     </main>
 
-    <!-- Modal Configuración -->
     <div id="configModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 text-black">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80">
             <h3 class="text-xl font-bold mb-4">Editar Producto</h3>
             <div class="space-y-4">
                 <input type="text" id="editName" placeholder="Nombre" class="w-full p-2 border rounded-lg">
@@ -210,8 +185,8 @@
                 <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200 text-[11px]">
                     <span class="font-bold truncate">${item.name}</span>
                     <div class="flex items-center gap-2">
-                        <span class="text-blue-500 font-bold">${formatMoney(item.price)}</span>
-                        <button onclick="removeFromCart(${item.cartId})" class="text-red-400 font-bold">✕</button>
+                        <span class="text-blue-500">${formatMoney(item.price)}</span>
+                        <button onclick="removeFromCart(${item.cartId})" class="text-red-400">✕</button>
                     </div>
                 </div>
             `).join('') : '<p class="text-slate-400 text-center text-xs mt-4 italic">Carrito vacío</p>';
@@ -248,7 +223,7 @@
                 items: cart.map(i => ({name: i.name, price: i.price})),
                 total: total,
                 pagos: resumenPagos,
-                fechaFull: fechaObj.toLocaleString('es-CO'),
+                fechaFull: fechaObj.toLocaleString(),
                 fechaCorta: fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             history = [sale, ...history];
@@ -258,7 +233,6 @@
             document.getElementById('inputPago').value = '';
             document.getElementById('manualDateTime').value = '';
             updateUI(); renderHistory();
-            printDirectReceipt(sale.id);
         }
 
         function renderHistory() {
@@ -266,8 +240,11 @@
             const btnRestore = document.getElementById('btnRestoreHistory');
             const backup = localStorage.getItem('pos_history_backup');
 
-            if (backup && backup !== "[]") btnRestore.classList.remove('hidden');
-            else btnRestore.classList.add('hidden');
+            if (backup && backup !== "[]") {
+                btnRestore.classList.remove('hidden');
+            } else {
+                btnRestore.classList.add('hidden');
+            }
 
             let totalE = 0, totalT = 0;
             if (!history.length) {
@@ -282,14 +259,14 @@
                 totalE += (v.pagos['Efectivo'] || 0);
                 totalT += (v.pagos['Tarjeta'] || 0);
                 return `
-                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-black">
+                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
                     <div class="flex justify-between items-center pb-1 border-b mb-2">
                         <span class="font-bold text-slate-400 text-[8px] uppercase">${v.fechaCorta}</span>
                         <div class="flex gap-2">
-                            <button onclick="printDirectReceipt(${v.id})" class="text-blue-500" title="Imprimir Recibo">
+                            <button onclick="printReceipt(${v.id})" class="text-blue-400 hover:text-blue-600" title="Imprimir Recibo">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                             </button>
-                            <button onclick="removeHistoryItem(${v.id})" class="text-red-300">✕</button>
+                            <button onclick="removeHistoryItem(${v.id})" class="text-red-300 hover:text-red-500">✕</button>
                         </div>
                     </div>
                     ${v.items.map(it => `<div class="flex justify-between text-[9px] text-slate-500"><span>${it.name}</span><span>${formatMoney(it.price)}</span></div>`).join('')}
@@ -305,140 +282,151 @@
             document.getElementById('historyTotalSum').innerText = formatMoney(totalE + totalT);
         }
 
-        function printDirectReceipt(id) {
+        // Nueva función para imprimir recibo individual
+        function printReceipt(id) {
             const sale = history.find(h => h.id === id);
             if (!sale) return;
-            const printArea = document.getElementById('receipt-print-area');
-            let html = `
-                <div style="font-family: 'Courier New', Courier, monospace; width: 100%; text-align: center; color: black; background: white; padding: 0; margin: 0; font-size: 11px;">
-                    <div style="font-weight: bold; font-size: 13px; margin-bottom: 2px;">ALMACÉN SOLOMEDIAS INTIMAS</div>
-                    <div style="margin-bottom: 10px;">RECIBO DE VENTA</div>
-                    <div style="text-align: left; margin-bottom: 2px;">FECHA: ${sale.fechaFull}</div>
-                    <div style="text-align: left; margin-bottom: 5px;">ID: ${sale.id}</div>
-                    <div style="border-top: 1px dashed black; margin: 5px 0;"></div>
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <tbody>
-                            ${sale.items.map(item => `
-                                <tr>
-                                    <td style="padding: 2px 0;">${item.name.toUpperCase()}</td>
-                                    <td style="text-align: right; padding: 2px 0;">${formatMoney(item.price)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <div style="border-top: 1px dashed black; margin: 5px 0;"></div>
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin: 5px 0;">
-                        <span>TOTAL:</span>
-                        <span>${formatMoney(sale.total)}</span>
-                    </div>
-                    <div style="text-align: left; font-size: 10px; margin-top: 5px;">
-                        ${Object.entries(sale.pagos).map(([m, a]) => `PAGO ${m.toUpperCase()}: ${formatMoney(a)}`).join('<br>')}
-                    </div>
-                    <div style="margin-top: 15px; font-weight: bold;">¡GRACIAS POR SU COMPRA!</div>
-                    <div style="height: 40px;"></div>
-                </div>
-            `;
-            printArea.innerHTML = html;
-            setTimeout(() => { window.print(); }, 100);
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Estilo Sobrio y Profesional
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text("ALMACÉN SOLOMEDIAS INTIMAS", 14, 20);
+            
+            doc.setFontSize(11);
+            doc.text("RECIBO DE CAJA", 14, 28);
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(80, 80, 80);
+            doc.text(`Fecha: ${sale.fechaFull}`, 14, 35);
+            doc.text(`Recibo No: ${sale.id}`, 14, 40);
+
+            const itemsRows = sale.items.map(i => [i.name.toUpperCase(), formatMoney(i.price)]);
+
+            doc.autoTable({
+                startY: 45,
+                head: [['Producto', 'Precio']],
+                body: itemsRows,
+                theme: 'grid',
+                headStyles: { fillColor: [60, 60, 60], fontSize: 11 },
+                styles: { fontSize: 11, textColor: [40, 40, 40] },
+                columnStyles: {
+                    1: { halign: 'right' }
+                }
+            });
+
+            const finalY = doc.lastAutoTable.finalY + 10;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text("TOTAL PAGADO:", 14, finalY);
+            doc.text(formatMoney(sale.total), 180, finalY, { align: 'right' });
+
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+            const metodos = Object.entries(sale.pagos).map(([m, a]) => `${m}: ${formatMoney(a)}`).join(' | ');
+            doc.text(`Método(s) de pago: ${metodos}`, 14, finalY + 7);
+
+            doc.text("Gracias por su compra.", 14, finalY + 20);
+
+            doc.save(`recibo_${sale.id}.pdf`);
         }
 
-        // FUNCIÓN DE EXPORTACIÓN A PDF OPTIMIZADA PARA CUADRE
         document.getElementById('btnExportPDF').onclick = () => {
+            if (history.length === 0) return alert("No hay ventas para exportar.");
+
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Configuración de Fuente y Título
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(20);
-            doc.setTextColor(37, 99, 235); // Azul Primario
-            doc.text("ALMACÉN SOLOMEDIAS INTIMAS", 105, 15, { align: "center" });
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text("ALMACÉN SOLOMEDIAS INTIMAS", 14, 20);
             
-            doc.setFontSize(14);
-            doc.setTextColor(100);
-            doc.text("Cuadre de Caja - Historial de Ventas", 105, 23, { align: "center" });
+            doc.setFontSize(12);
+            doc.text("REPORTE DE VENTAS - CUADRE DE CAJA", 14, 28);
             
-            // Línea separadora
-            doc.setDrawColor(200);
-            doc.line(14, 28, 196, 28);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 14, 35);
 
-            // Cálculo de totales para el resumen
             let totalE = 0, totalT = 0;
-            history.forEach(v => {
-                totalE += (v.pagos['Efectivo'] || 0);
-                totalT += (v.pagos['Tarjeta'] || 0);
-            });
-
-            // Cuadros de resumen
-            doc.setFontSize(10);
-            doc.setTextColor(50);
+            const rows = [];
             
-            // Caja Efectivo
-            doc.setFillColor(240, 253, 244); // Verde claro
-            doc.roundedRect(14, 35, 55, 20, 3, 3, 'F');
-            doc.setTextColor(21, 128, 61); // Verde oscuro
-            doc.text("TOTAL EFECTIVO", 18, 42);
-            doc.setFontSize(14);
-            doc.text(formatMoney(totalE), 18, 50);
-
-            // Caja Tarjeta
-            doc.setFillColor(250, 245, 255); // Morado claro
-            doc.roundedRect(77, 35, 55, 20, 3, 3, 'F');
-            doc.setFontSize(10);
-            doc.setTextColor(126, 34, 206); // Morado oscuro
-            doc.text("TOTAL TARJETA", 81, 42);
-            doc.setFontSize(14);
-            doc.text(formatMoney(totalT), 81, 50);
-
-            // Caja Gran Total
-            doc.setFillColor(37, 99, 235); // Azul
-            doc.roundedRect(140, 35, 56, 20, 3, 3, 'F');
-            doc.setFontSize(10);
-            doc.setTextColor(255, 255, 255); // Blanco
-            doc.text("VENTA TOTAL", 144, 42);
-            doc.setFontSize(14);
-            doc.text(formatMoney(totalE + totalT), 144, 50);
-
-            // Tabla de datos
-            const tableData = [];
             history.forEach(v => {
-                const metodos = Object.keys(v.pagos).join(' / ');
-                tableData.push([
-                    v.fechaFull, 
-                    metodos, 
-                    v.items.map(i => i.name).join(", "), 
+                const pagoE = (v.pagos['Efectivo'] || 0);
+                const pagoT = (v.pagos['Tarjeta'] || 0);
+                totalE += pagoE;
+                totalT += pagoT;
+                
+                const itemsList = v.items.map(i => `${i.name.toUpperCase()}  ${formatMoney(i.price)}`).join('\n');
+                
+                rows.push([
+                    v.fechaFull,
+                    itemsList,
+                    formatMoney(pagoE),
+                    formatMoney(pagoT),
                     formatMoney(v.total)
                 ]);
             });
 
             doc.autoTable({
-                startY: 65,
-                head: [['Fecha y Hora', 'Método de Pago', 'Productos Vendidos', 'Total']],
-                body: tableData,
-                theme: 'striped',
+                startY: 42,
+                head: [['Fecha / Hora', 'Productos y Precios Unitarios', 'Efectivo', 'Tarjeta', 'Total Venta']],
+                body: rows,
+                theme: 'grid',
                 headStyles: { 
-                    fillColor: [37, 99, 235],
-                    fontSize: 10,
+                    fillColor: [60, 60, 60], 
+                    fontSize: 11, 
+                    fontStyle: 'bold',
                     halign: 'center'
                 },
                 styles: { 
-                    fontSize: 9,
-                    cellPadding: 3
+                    fontSize: 11, 
+                    cellPadding: 3,
+                    valign: 'top',
+                    textColor: [40, 40, 40]
                 },
                 columnStyles: {
-                    3: { halign: 'right', fontStyle: 'bold' }
+                    0: { cellWidth: 35, fontSize: 10 },
+                    1: { cellWidth: 'auto' }, 
+                    2: { halign: 'right', cellWidth: 28 },
+                    3: { halign: 'right', cellWidth: 28 },
+                    4: { halign: 'right', fontStyle: 'bold', cellWidth: 28 }
                 }
             });
 
-            // Pie de página
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150);
-                doc.text(`Generado el: ${new Date().toLocaleString()} - Página ${i} de ${totalPages}`, 105, 285, { align: "center" });
-            }
+            const finalY = doc.lastAutoTable.finalY + 15;
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text("RESUMEN DE CIERRE", 14, finalY);
+            
+            doc.autoTable({
+                startY: finalY + 4,
+                body: [
+                    ['Total en Efectivo:', formatMoney(totalE)],
+                    ['Total en Tarjeta:', formatMoney(totalT)],
+                    ['TOTAL GENERAL DE VENTAS:', formatMoney(totalE + totalT)]
+                ],
+                theme: 'plain',
+                styles: { fontSize: 11, cellPadding: 2 },
+                columnStyles: { 
+                    0: { fontStyle: 'bold', cellWidth: 100 },
+                    1: { fontStyle: 'bold', halign: 'right' }
+                }
+            });
 
-            doc.save(`cuadre_caja_${new Date().toISOString().slice(0,10)}.pdf`);
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'italic');
+            doc.text("Documento contable interno para propósitos de cuadre.", 14, doc.internal.pageSize.height - 10);
+
+            doc.save(`cuadre_profesional_${new Date().toISOString().split('T')[0]}.pdf`);
         };
 
         function removeHistoryItem(id) {
@@ -451,7 +439,7 @@
         }
 
         document.getElementById('btnClearHistory').onclick = () => {
-            if(confirm("¿Borrar historial actual?")) {
+            if(confirm("¿Borrar historial actual? Podrás recuperarlo con el botón naranja.")) {
                 localStorage.setItem('pos_history_backup', JSON.stringify(history));
                 history = [];
                 localStorage.setItem('pos_history', "[]");
@@ -473,8 +461,11 @@
             const p = parseFloat(document.getElementById('inputManualPrice').value);
             const n = document.getElementById('inputManualName').value || "Venta Rápida";
             const q = parseInt(document.getElementById('inputManualQty').value) || 1;
+            
             if (p > 0) { 
-                for(let i = 0; i < q; i++) { addToCart({ name: n, price: p }); }
+                for(let i = 0; i < q; i++) {
+                    addToCart({ name: n, price: p }); 
+                }
                 document.getElementById('inputManualPrice').value = ''; 
                 document.getElementById('inputManualName').value = ''; 
                 document.getElementById('inputManualQty').value = '1';
@@ -482,7 +473,7 @@
         };
         
         document.getElementById('toggleEdit').onclick = () => { isEditMode = !isEditMode; document.getElementById('toggleEdit').innerText = isEditMode ? "Listo" : "Configurar Botones"; renderProducts(); };
-        document.getElementById('btnAddProduct').onclick = () => { const n = { id: Date.now(), name: "Nuevo", price: 0 }; products.push(n); renderProducts(); openConfig(n.id); };
+        document.getElementById('btnAddProduct').onclick = () => { const n = { id: Date.now(), name: "Nuevo Producto", price: 0 }; products.push(n); renderProducts(); openConfig(n.id); };
         function openConfig(id) { editingId = id; const p = products.find(x => x.id === id); document.getElementById('editName').value = p.name; document.getElementById('editPrice').value = p.price; document.getElementById('configModal').classList.remove('hidden'); }
         document.getElementById('saveConfig').onclick = () => { products = products.map(p => p.id === editingId ? {...p, name: document.getElementById('editName').value, price: parseFloat(document.getElementById('editPrice').value) || 0} : p); localStorage.setItem('pos_products', JSON.stringify(products)); document.getElementById('configModal').classList.add('hidden'); renderProducts(); };
         document.getElementById('deleteProduct').onclick = () => { products = products.filter(p => p.id !== editingId); localStorage.setItem('pos_products', JSON.stringify(products)); document.getElementById('configModal').classList.add('hidden'); renderProducts(); };
