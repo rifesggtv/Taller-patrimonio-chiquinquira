@@ -123,7 +123,6 @@
                 <div class="flex justify-between items-center mb-1">
                     <h2 class="font-bold text-slate-700 text-[11px] uppercase tracking-tight">📜 Historial</h2>
                     <div class="flex gap-2 items-center">
-                        <!-- BOTÓN DE EXPORTACIÓN PDF RESTAURADO -->
                         <button id="btnExportPDF" class="text-blue-500 hover:text-blue-700 transition" title="Exportar historial a PDF">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         </button>
@@ -343,13 +342,63 @@
             setTimeout(() => { window.print(); }, 100);
         }
 
-        // FUNCIÓN DE EXPORTACIÓN A PDF RESTAURADA
+        // FUNCIÓN DE EXPORTACIÓN A PDF OPTIMIZADA PARA CUADRE
         document.getElementById('btnExportPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFontSize(16);
-            doc.text("Historial de Ventas - Almacén Solomedias", 14, 20);
             
+            // Configuración de Fuente y Título
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(37, 99, 235); // Azul Primario
+            doc.text("ALMACÉN SOLOMEDIAS INTIMAS", 105, 15, { align: "center" });
+            
+            doc.setFontSize(14);
+            doc.setTextColor(100);
+            doc.text("Cuadre de Caja - Historial de Ventas", 105, 23, { align: "center" });
+            
+            // Línea separadora
+            doc.setDrawColor(200);
+            doc.line(14, 28, 196, 28);
+
+            // Cálculo de totales para el resumen
+            let totalE = 0, totalT = 0;
+            history.forEach(v => {
+                totalE += (v.pagos['Efectivo'] || 0);
+                totalT += (v.pagos['Tarjeta'] || 0);
+            });
+
+            // Cuadros de resumen
+            doc.setFontSize(10);
+            doc.setTextColor(50);
+            
+            // Caja Efectivo
+            doc.setFillColor(240, 253, 244); // Verde claro
+            doc.roundedRect(14, 35, 55, 20, 3, 3, 'F');
+            doc.setTextColor(21, 128, 61); // Verde oscuro
+            doc.text("TOTAL EFECTIVO", 18, 42);
+            doc.setFontSize(14);
+            doc.text(formatMoney(totalE), 18, 50);
+
+            // Caja Tarjeta
+            doc.setFillColor(250, 245, 255); // Morado claro
+            doc.roundedRect(77, 35, 55, 20, 3, 3, 'F');
+            doc.setFontSize(10);
+            doc.setTextColor(126, 34, 206); // Morado oscuro
+            doc.text("TOTAL TARJETA", 81, 42);
+            doc.setFontSize(14);
+            doc.text(formatMoney(totalT), 81, 50);
+
+            // Caja Gran Total
+            doc.setFillColor(37, 99, 235); // Azul
+            doc.roundedRect(140, 35, 56, 20, 3, 3, 'F');
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255); // Blanco
+            doc.text("VENTA TOTAL", 144, 42);
+            doc.setFontSize(14);
+            doc.text(formatMoney(totalE + totalT), 144, 50);
+
+            // Tabla de datos
             const tableData = [];
             history.forEach(v => {
                 const metodos = Object.keys(v.pagos).join(' / ');
@@ -362,14 +411,34 @@
             });
 
             doc.autoTable({
-                startY: 30,
-                head: [['Fecha', 'Método', 'Productos', 'Total']],
+                startY: 65,
+                head: [['Fecha y Hora', 'Método de Pago', 'Productos Vendidos', 'Total']],
                 body: tableData,
-                theme: 'grid',
-                headStyles: { fillStyle: [37, 99, 235] }
+                theme: 'striped',
+                headStyles: { 
+                    fillColor: [37, 99, 235],
+                    fontSize: 10,
+                    halign: 'center'
+                },
+                styles: { 
+                    fontSize: 9,
+                    cellPadding: 3
+                },
+                columnStyles: {
+                    3: { halign: 'right', fontStyle: 'bold' }
+                }
             });
 
-            doc.save(`ventas_${new Date().toISOString().slice(0,10)}.pdf`);
+            // Pie de página
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text(`Generado el: ${new Date().toLocaleString()} - Página ${i} de ${totalPages}`, 105, 285, { align: "center" });
+            }
+
+            doc.save(`cuadre_caja_${new Date().toISOString().slice(0,10)}.pdf`);
         };
 
         function removeHistoryItem(id) {
